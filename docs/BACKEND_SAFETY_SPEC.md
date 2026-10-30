@@ -29,17 +29,17 @@ khoảng cách GPS ở `/arrive` phía máy chủ, vì kiểm tra trên app có 
 - Khách dưới 3 sao hoặc có báo cáo vi phạm thì đưa vào danh sách cần duyệt hoặc khoá.
 
 ### 3. Phí huỷ theo trạng thái — `FEATURE_CANCELLATION_FEES`
-Mức đề xuất (chờ CEO duyệt):
+CEO chốt 30/10/2026:
 
 | Thời điểm huỷ | Phí |
 |---|---|
 | Trước khi KTV nhận đơn | Miễn phí |
 | KTV đã nhận, chưa xuất phát | Miễn phí |
 | KTV đang di chuyển | 30% giá dịch vụ |
-| KTV đã đến nơi | 50% giá dịch vụ |
+| KTV đã đến nơi | 30% giá dịch vụ |
 
 - `/cancel` tính phí, trừ ví hoặc hoàn phần còn lại, và trả `cancellationFee` để app hiển thị.
 - Một phần phí huỷ chuyển cho KTV như phí di chuyển.
 
 ### 4. Hotline an toàn
-- Điền số vào `SAFETY_HOTLINE` khi có người trực 24/7. Khi để trống, app ẩn nút gọi hotline.
+- CEO sẽ mua số sau. Điền số vào `SAFETY_HOTLINE` khi có người trực 24/7. Khi để trống, app ẩn nút gọi hotline.

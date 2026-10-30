@@ -34,12 +34,12 @@ export const WORKER_GENDER_OPTIONS = [
   { value: WorkerGenderPreference.Male, label: 'KTV nam' },
 ] as const;
 
-// Chính sách huỷ theo trạng thái đơn. Mức phí là bản nháp, chờ CEO duyệt và backend áp dụng.
+// Chính sách huỷ theo trạng thái đơn — CEO chốt 30/10/2026: 30% từ khi KTV xuất phát. Chờ backend áp dụng.
 export const CANCELLATION_POLICY = [
   { stage: 'Trước khi KTV nhận đơn', fee: 'Miễn phí' },
   { stage: 'KTV đã nhận, chưa xuất phát', fee: 'Miễn phí' },
   { stage: 'KTV đang di chuyển', fee: '30% giá dịch vụ (phí di chuyển)' },
-  { stage: 'KTV đã đến nơi', fee: '50% giá dịch vụ' },
+  { stage: 'KTV đã đến nơi', fee: '30% giá dịch vụ (phí di chuyển)' },
 ] as const;
 
 export const CUSTOMER_REPORT_REASONS = [
