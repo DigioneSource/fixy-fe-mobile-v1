@@ -62,3 +62,12 @@ App gọi `DELETE /api/user` (đã có trong Swagger). Backend cần bảo đả
 - Chặn xoá khi còn đơn đang chạy, và trả thông báo lỗi tiếng Việt để app hiển thị nguyên văn.
 - Xoá hoặc ẩn danh dữ liệu cá nhân (NĐ 13/2023), giữ lại chứng từ giao dịch theo luật kế toán.
 - Thu hồi refresh token của tài khoản.
+
+## Giờ hoạt động & hẹn giờ (CEO chốt 30/10/2026)
+
+- TAYZEN nhận đơn **24/24**, app không giới hạn khung giờ đặt.
+- Mỗi KTV tự đặt khung giờ làm việc (lịch tuần + ngày nghỉ trong hồ sơ KTV, API `worker-schedules` có sẵn).
+- Khách chọn KTV cụ thể + hẹn giờ: app đã gọi `check-availability` trước khi đặt.
+- **Backend cần bảo đảm:** ghép đơn tự động (`autoMatch`) chỉ gửi đơn cho KTV có lịch làm việc phủ
+  `scheduledAt` (hoặc thời điểm hiện tại với đơn đặt ngay) và không trùng đơn khác, đồng thời
+  `confirmDraft` kiểm tra lại lịch rảnh phía máy chủ.
