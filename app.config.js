@@ -33,11 +33,8 @@ module.exports = ({ config }) => {
     extra: {
       ...config.extra,
       apiUrl: process.env.API_URL || envLocal.API_URL,
-      fptProxyUrl:
-        process.env.FPT_PROXY_URL ||
-        envLocal.FPT_PROXY_URL ||
-        process.env.NEXT_PUBLIC_APP_URL ||
-        envLocal.NEXT_PUBLIC_APP_URL,
+      // Không lấy NEXT_PUBLIC_APP_URL làm dự phòng: ảnh CCCD chỉ được đi qua proxy được chỉ định rõ hoặc backend chính.
+      fptProxyUrl: process.env.FPT_PROXY_URL || envLocal.FPT_PROXY_URL,
       chatHubUrl: process.env.CHAT_HUB_URL || envLocal.CHAT_HUB_URL,
       notificationHubUrl: process.env.NOTIFICATION_HUB_URL || envLocal.NOTIFICATION_HUB_URL,
       goongApiKey: process.env.GOONG_API_KEY || envLocal.GOONG_API_KEY,

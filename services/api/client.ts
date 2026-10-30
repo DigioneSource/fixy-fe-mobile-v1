@@ -73,10 +73,8 @@ function logApiResponseError(error: any) {
     return;
   }
 
-  console.warn(`[API RESPONSE ERROR] ${status} ${originalRequest?.url}`, {
-    message: error.message,
-    data: error.response?.data,
-  });
+  // Không in body phản hồi: có thể chứa dữ liệu cá nhân.
+  console.warn(`[API RESPONSE ERROR] ${status} ${originalRequest?.url}`, error.message);
 }
 
 function isRefreshRequest(url?: string) {
@@ -129,10 +127,19 @@ async function retryWithFreshToken(originalRequest: any) {
     processQueue(null, accessToken);
     originalRequest.headers.Authorization = `Bearer ${accessToken}`;
     return apiClient(originalRequest);
-  } catch (refreshError) {
+  } catch (refreshError: any) {
     processQueue(refreshError, null);
-    console.error('[API CLIENT] Token refresh failed, logging out user:', refreshError);
-    await useAuthStore.getState().logout();
+    // Chỉ đăng xuất khi máy chủ từ chối refresh token; mất mạng/timeout thì giữ phiên để thử lại sau.
+    const refreshStatus = refreshError?.response?.status;
+    const rejectedByServer = refreshStatus
+      ? [400, 401, 403].includes(refreshStatus)
+      : refreshError?.message === 'Failed to extract new tokens';
+    if (rejectedByServer) {
+      console.warn('[API CLIENT] Token refresh rejected, logging out user:', refreshStatus);
+      await useAuthStore.getState().logout();
+    } else {
+      console.warn('[API CLIENT] Token refresh failed (network), keeping session');
+    }
     throw refreshError;
   } finally {
     isRefreshing = false;
@@ -219,7 +226,7 @@ function getAxiosMessage(error: AxiosError) {
       if (msgLower.includes('schedule not found') || msgLower.includes('schedule time is invalid')) {
         return 'Lịch làm việc của Kỹ thuật viên không hợp lệ hoặc chưa được thiết lập.';
       }
-      if (msgLower.includes('max file size exceeded') || msgLower.includes('limit')) {
+      if (msgLower.includes('max file size exceeded') || msgLower.includes('file size limit')) {
         return 'Dung lượng file ảnh vượt quá giới hạn 5MB.';
       }
       return message;

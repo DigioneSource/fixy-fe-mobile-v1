@@ -1,7 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { create } from 'zustand';
 
+import { signOutGoogle } from '@/features/auth/services/google-auth';
 import { AuthTokens } from '@/features/auth/tokens';
+import { queryClient } from '@/services/query-client';
 
 const ACCESS_TOKEN_KEY = 'fixy.accessToken';
 const REFRESH_TOKEN_KEY = 'fixy.refreshToken';
@@ -80,6 +82,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     } catch {
       // Ignored
     }
+
+    // Xoá dữ liệu đã tải (ví, địa chỉ, đơn) để người đăng nhập sau trên cùng máy không thấy.
+    queryClient.clear();
+    signOutGoogle();
 
     set({
       accessToken: undefined,

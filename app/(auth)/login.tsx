@@ -143,7 +143,6 @@ export default function LoginScreen() {
           router.replace('/home' as any);
         }
       } else {
-        Alert.alert('Đăng nhập thành công', 'Máy chủ đã xác thực đăng nhập.');
         router.replace('/home' as any);
       }
     } catch (error) {

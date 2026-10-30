@@ -28,11 +28,7 @@ type DeleteAccountModalProps = {
 };
 
 function normalizeConfirm(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .trim()
-    .toUpperCase();
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toUpperCase();
 }
 
 export function DeleteAccountModal({ visible, onClose, role }: DeleteAccountModalProps) {
@@ -93,7 +89,12 @@ export function DeleteAccountModal({ visible, onClose, role }: DeleteAccountModa
             <Text style={styles.desc}>Thao tác này không thể hoàn tác.</Text>
             {consequences.map((item) => (
               <View key={item} style={styles.row}>
-                <MaterialIcons name="error-outline" size={16} color="#B42318" style={styles.rowIcon} />
+                <MaterialIcons
+                  name="error-outline"
+                  size={16}
+                  color="#B42318"
+                  style={styles.rowIcon}
+                />
                 <Text style={styles.rowText}>{item}</Text>
               </View>
             ))}

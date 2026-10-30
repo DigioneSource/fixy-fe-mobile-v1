@@ -117,6 +117,8 @@ export default function WorkerSetupScreen() {
     return [cccdFrontUri, cccdBackUri].filter(Boolean) as string[];
   }, [cccdFrontUri, cccdBackUri]);
   const [scanningCccd, setScanningCccd] = React.useState(false);
+  // Đồng ý riêng cho việc thu ảnh CCCD (Luật 91/2025/QH15) — bắt buộc trước khi chụp/tải CCCD.
+  const [cccdConsent, setCccdConsent] = React.useState(false);
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
 
   // Certificates list
@@ -410,6 +412,10 @@ export default function WorkerSetupScreen() {
 
   // File pickers
   const handlePickCccdSlot = (slot: 'front' | 'back') => {
+    if (!cccdConsent) {
+      Alert.alert('Cần sự đồng ý', 'Vui lòng tick "Tôi đồng ý" phía trên trước khi chụp hoặc tải ảnh CCCD.');
+      return;
+    }
     if (slot === 'back' && !cccdFrontUri) {
       Alert.alert('Yêu cầu', 'Vui lòng tải hoặc chụp ảnh Mặt trước CCCD trước.');
       return;
@@ -1103,8 +1109,26 @@ export default function WorkerSetupScreen() {
           <View style={styles.stepContainer}>
             <Text style={styles.sectionTitle}>Xác minh định danh CCCD</Text>
             <Text style={styles.subLabel}>
-              Tải ảnh mặt trước/mặt sau của Citizen Identity Card để duyệt xác thực:
+              Chụp hai mặt căn cước công dân để TAYZEN xác minh:
             </Text>
+
+            <View style={styles.cccdConsentBox}>
+              <Text style={styles.cccdConsentText}>
+                TAYZEN thu ảnh CCCD chỉ để xác minh danh tính KTV, khấu trừ thuế và phối hợp với cơ quan
+                chức năng khi có sự cố an toàn. Ảnh được nhận dạng tự động qua đối tác FPT Smart Cloud và
+                không chia sẻ cho khách hàng.
+              </Text>
+              <Pressable
+                style={styles.cccdConsentRow}
+                onPress={() => setCccdConsent((value) => !value)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: cccdConsent }}>
+                <View style={[styles.cccdConsentCheckbox, cccdConsent && styles.cccdConsentCheckboxChecked]}>
+                  {cccdConsent ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+                </View>
+                <Text style={styles.cccdConsentLabel}>Tôi đồng ý</Text>
+              </Pressable>
+            </View>
 
             <View style={styles.cccdTwoSlotsRow}>
               {/* Slot 1: Mặt trước */}
@@ -1172,7 +1196,7 @@ export default function WorkerSetupScreen() {
                 ) : (
                   <>
                     <MaterialIcons name="document-scanner" size={18} color="#ffffff" />
-                    <Text style={styles.scanBtnText}>Quét tự động với AI OCR</Text>
+                    <Text style={styles.scanBtnText}>Tự điền thông tin từ ảnh CCCD</Text>
                   </>
                 )}
               </Pressable>
@@ -1283,6 +1307,13 @@ export default function WorkerSetupScreen() {
               <Pressable
                 style={styles.nextBtnHalf}
                 onPress={() => {
+                  if (!cccdConsent) {
+                    Alert.alert(
+                      'Cần sự đồng ý',
+                      'Vui lòng tick "Tôi đồng ý" cho việc thu ảnh CCCD để tiếp tục.'
+                    );
+                    return;
+                  }
                   if (!citizenIdNumber || !citizenIdIssueDate || !citizenIdIssuePlace) {
                     Alert.alert(
                       'Thiếu thông tin',
@@ -1399,9 +1430,9 @@ export default function WorkerSetupScreen() {
               thumbTintColor="#0F382C"
             />
 
-            <Text style={styles.sectionTitle}>Hình ảnh hoạt động thực tế (Portfolio)</Text>
+            <Text style={styles.sectionTitle}>Ảnh làm việc thực tế</Text>
             <Text style={styles.subLabel}>
-              Tải ảnh hình ảnh thực tế / Dịch vụ của bạn để tăng độ tin cậy:
+              Tải ảnh làm việc thực tế để khách tin tưởng hơn
             </Text>
 
             <View style={styles.cccdUploadBox}>
@@ -1484,7 +1515,7 @@ export default function WorkerSetupScreen() {
                 </View>
                 <Text style={styles.statusTitle}>Tài khoản tạm khóa</Text>
                 <Text style={styles.statusDesc}>
-                  Hồ sơ đối tác thợ của bạn hiện đang ở trạng thái bị tạm ngưng hoạt động. Vui lòng
+                  Hồ sơ đối tác KTV của bạn hiện đang ở trạng thái bị tạm ngưng hoạt động. Vui lòng
                   liên hệ hotline tổng đài hỗ trợ để được giải đáp.
                 </Text>
               </View>
@@ -1688,6 +1719,45 @@ const styles = StyleSheet.create({
     color: '#818A91',
     marginTop: -4,
     marginBottom: 8,
+  },
+  cccdConsentBox: {
+    gap: 10,
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#EFECE6',
+    backgroundColor: '#F4F1EA',
+  },
+  cccdConsentText: {
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#374151',
+  },
+  cccdConsentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cccdConsentCheckbox: {
+    height: 22,
+    width: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#C9C4BA',
+    backgroundColor: '#FFFFFF',
+  },
+  cccdConsentCheckboxChecked: {
+    borderColor: '#0F382C',
+    backgroundColor: '#0F382C',
+  },
+  cccdConsentLabel: {
+    fontFamily: 'Montserrat_700Bold',
+    fontSize: 14,
+    color: '#0F382C',
   },
   textInput: {
     height: 52,

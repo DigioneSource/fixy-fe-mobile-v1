@@ -352,7 +352,10 @@ export async function deleteDraft(draftId: string): Promise<void> {
 export async function confirmDraft(
   draftId: string
 ): Promise<{ bookingId: string; booking?: Booking }> {
-  const response = await apiClient.post(`${BOOKING_PATH}/drafts/${draftId}/confirm`);
+  // Khách chỉ tới được bước này sau khi đã tick đồng ý điều khoản — gửi kèm để backend lưu bằng chứng.
+  const response = await apiClient.post(`${BOOKING_PATH}/drafts/${draftId}/confirm`, {
+    acceptedTerms: true,
+  });
   const data = unwrapData(response.data);
   const bookingId = data?.bookingId ?? data?.id ?? response.data?.bookingId ?? response.data?.id;
   const booking =
@@ -370,6 +373,15 @@ export async function getBookingDetails(bookingId: string): Promise<Booking> {
 
 export type BookingPaymentCheck = 'paid' | 'pending' | 'cancelled';
 
+const PAID_BOOKING_STATUSES: number[] = [
+  BookingStatus.Matching,
+  BookingStatus.Confirmed,
+  BookingStatus.Traveling,
+  BookingStatus.Arrived,
+  BookingStatus.InProgress,
+  BookingStatus.Completed,
+];
+
 /** Hỏi lại backend sau khi cổng thanh toán chuyển hướng về — không tin vào URL trả về. */
 export async function waitForBookingPaid(
   bookingId: string,
@@ -381,7 +393,8 @@ export async function waitForBookingPaid(
       const booking = await getBookingDetails(bookingId);
       const status = Number(booking.status);
       if (status === BookingStatus.Cancelled) return 'cancelled';
-      if (status !== BookingStatus.PendingPayment) return 'paid';
+      // Chỉ coi là đã trả khi đơn đã qua bước thanh toán; Pending/PendingPayment/trạng thái lạ thì chờ tiếp.
+      if (PAID_BOOKING_STATUSES.includes(status)) return 'paid';
     } catch {
       // Lỗi mạng tạm thời: thử lại ở lượt sau
     }

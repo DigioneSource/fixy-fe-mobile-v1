@@ -115,7 +115,7 @@ function getCategoryLabel(categoryId: string): string {
     case 'facial':
       return 'Chăm sóc da mặt';
     case 'massage':
-      return 'Massage toàn thân';
+      return 'Massage trị liệu thư giãn';
     case 'spa':
       return 'Spa trị liệu';
     default:
@@ -138,7 +138,10 @@ export default function BookingDetailScreen() {
     refetchInterval: (query) => {
       const data = query.state.data;
       if (!data) return false;
-      return isTerminalBookingStatus(Number(data.status)) ? false : 5000;
+      const status = Number(data.status);
+      if (isTerminalBookingStatus(status)) return false;
+      // Đơn đang diễn ra cập nhật nhanh; đơn chờ ghép hoặc hẹn giờ xa thì thưa hơn (SignalR vẫn đẩy thay đổi).
+      return status >= BookingStatus.Confirmed && status <= BookingStatus.InProgress ? 5000 : 30000;
     },
   });
 
@@ -402,7 +405,7 @@ export default function BookingDetailScreen() {
         const finalTotalAmount = Math.max(0, totalAmount - getVoucherDiscount(selectedVoucher));
 
         if (wallet && wallet.balance < finalTotalAmount) {
-          throw new Error('Ví không đủ số dư. Vui lòng nạp thêm tiền hoặc chọn VNPay.');
+          throw new Error('Ví không đủ số dư. Vui lòng nạp thêm tiền hoặc chọn thanh toán VNPay.');
         }
 
         await payBookingWithWallet(booking.id);
@@ -419,10 +422,7 @@ export default function BookingDetailScreen() {
     },
     onSuccess: (type) => {
       if (type === 'wallet') {
-        if (booking) {
-          const updatedBooking = { ...booking, status: 6 };
-          queryClient.setQueryData(['booking', bookingId], updatedBooking);
-        }
+        queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
         Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng TAYZEN!');
       }
@@ -455,7 +455,7 @@ export default function BookingDetailScreen() {
       `Vui lòng chọn lý do bạn muốn hủy đơn đặt lịch này:${policyNote}`,
       [
         { text: 'Thay đổi kế hoạch', onPress: () => cancelMutation.mutate('Thay đổi kế hoạch') },
-        { text: 'Tìm được thợ khác', onPress: () => cancelMutation.mutate('Tìm được thợ khác') },
+        { text: 'Tìm được KTV khác', onPress: () => cancelMutation.mutate('Tìm được KTV khác') },
         {
           text: 'Thời gian không phù hợp',
           onPress: () => cancelMutation.mutate('Thời gian không phù hợp'),
@@ -477,6 +477,7 @@ export default function BookingDetailScreen() {
   };
 
   const handlePayBill = () => {
+    if (payBillMutation.isPending) return;
     payBillMutation.mutate();
   };
 
@@ -484,12 +485,6 @@ export default function BookingDetailScreen() {
     setIsVerifyingVnpay(true);
     try {
       await verifyVnpayCallback(params);
-      if (booking) {
-        queryClient.setQueryData(['booking', bookingId], {
-          ...booking,
-          status: BookingStatus.Completed,
-        });
-      }
       queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng TAYZEN!');
@@ -949,6 +944,29 @@ export default function BookingDetailScreen() {
       <View style={[styles.footerBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         {Number(booking.status) === BookingStatus.PendingPayment ? (
           <View style={{ gap: 10 }}>
+            <View style={styles.payMethodRow}>
+              {[
+                {
+                  value: PaymentMethod.Wallet,
+                  label: `Ví TAYZEN${wallet ? ` (${formatCurrency(wallet.balance)})` : ''}`,
+                },
+                { value: PaymentMethod.Vnpay, label: 'VNPay' },
+              ].map((option) => {
+                const active = selectedPaymentMethod === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    style={[styles.payMethodChip, active && styles.payMethodChipActive]}
+                    onPress={() => setSelectedPaymentMethod(option.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: active }}>
+                    <Text style={[styles.payMethodText, active && styles.payMethodTextActive]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
             <Pressable
               style={[styles.primaryActionBtn, actionLoading && styles.disabledBtn]}
               onPress={handlePayBill}
@@ -956,7 +974,11 @@ export default function BookingDetailScreen() {
               {actionLoading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.primaryActionText}>Tiếp tục thanh toán qua cổng online</Text>
+                <Text style={styles.primaryActionText}>
+                  {selectedPaymentMethod === PaymentMethod.Wallet
+                    ? 'Thanh toán bằng ví TAYZEN'
+                    : 'Thanh toán qua VNPay'}
+                </Text>
               )}
             </Pressable>
             <Pressable style={styles.cancelBtn} onPress={handleCancelBooking}>
@@ -1933,5 +1955,32 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat_700Bold',
     fontSize: 13,
     color: '#111827',
+  },
+  payMethodRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  payMethodChip: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#D0D5DD',
+    backgroundColor: '#FFFFFF',
+  },
+  payMethodChipActive: {
+    borderColor: '#0F382C',
+    backgroundColor: '#E8F0EC',
+  },
+  payMethodText: {
+    color: '#475467',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 13,
+  },
+  payMethodTextActive: {
+    color: '#0F382C',
   },
 });

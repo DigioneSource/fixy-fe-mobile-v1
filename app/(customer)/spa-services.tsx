@@ -229,7 +229,7 @@ export default function SpaServicesScreen() {
 
             <Text style={styles.bannerTitle}>Không Gian Spa Đẳng Cấp</Text>
             <Text style={styles.bannerSubtitle}>
-              Thư giãn tuyệt đối với đội ngũ kỹ thuật viên tay nghề cao & không gian tiêu chuẩn 5 sao
+              Trị liệu thư giãn chuẩn spa, KTV đã xác minh, đến tận nhà.
             </Text>
 
             {/* Quick Stats Bar */}

@@ -1,7 +1,15 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as React from 'react';
-import { Alert, Pressable, StyleSheet, Text, View, TextInput, ActivityIndicator } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  ActivityIndicator,
+} from 'react-native';
 
 import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthScreen } from '@/features/auth/components/auth-screen';
@@ -14,7 +22,13 @@ import {
   WORKER_ROLE_REGISTER,
 } from '@/features/auth/constants';
 import { promptGoogleSignIn } from '@/features/auth/services/google-auth';
-import { register, sendOtp, verifyOtp, login as loginRequest, loginGoogle } from '@/features/auth/services/auth-api';
+import {
+  register,
+  sendOtp,
+  verifyOtp,
+  login as loginRequest,
+  loginGoogle,
+} from '@/features/auth/services/auth-api';
 import { extractAuthTokens } from '@/features/auth/tokens';
 import { FieldErrors, validateRegisterForm } from '@/features/auth/validation';
 import { getApiErrorMessage } from '@/services/api/client';
@@ -62,8 +76,16 @@ export default function RegisterScreen() {
   }
 
   async function googleSignIn() {
-    if (!acceptedTerms) {
-      setErrors((prev) => ({ ...prev, acceptedTerms: 'Bạn cần đồng ý với điều khoản sử dụng.' }));
+    if (!acceptedTerms || !acceptedPrivacy) {
+      setErrors((prev) => ({
+        ...prev,
+        acceptedTerms: acceptedTerms
+          ? undefined
+          : 'Bạn cần xác nhận đủ 18 tuổi và đồng ý Điều khoản sử dụng.',
+        acceptedPrivacy: acceptedPrivacy
+          ? undefined
+          : 'Bạn cần đồng ý cho TAYZEN xử lý dữ liệu cá nhân.',
+      }));
       return;
     }
     const credential = await promptGoogleSignIn();
@@ -81,6 +103,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [acceptedTerms, setAcceptedTerms] = React.useState(false);
+  const [acceptedPrivacy, setAcceptedPrivacy] = React.useState(false);
 
   // Verification & Flow States
   const [isOtpSent, setIsOtpSent] = React.useState(false);
@@ -101,6 +124,7 @@ export default function RegisterScreen() {
   const params = useLocalSearchParams<{
     target?: string;
     selectedRole?: string;
+    role?: string;
     isOtpVerified?: string;
     step?: string;
   }>();
@@ -108,6 +132,11 @@ export default function RegisterScreen() {
   React.useEffect(() => {
     if (params.target) setTarget(params.target);
     if (params.selectedRole) setSelectedRole(params.selectedRole as RegisterRole);
+    // Link "Đăng ký làm kỹ thuật viên" ở màn chào mở register?role=worker → chọn sẵn vai KTV.
+    if (!params.selectedRole && params.role === 'worker') {
+      setSelectedRole('worker');
+      if (!params.step) setStep(2);
+    }
     if (params.isOtpVerified === 'true') setIsOtpVerified(true);
     if (params.step) setStep(parseInt(params.step, 10));
   }, [params]);
@@ -163,13 +192,13 @@ export default function RegisterScreen() {
       setIsOtpSent(true);
       setCooldown(60);
       setOtpDigits(Array.from({ length: 6 }, () => ''));
-      
+
       // Navigate immediately to OTP screen
       router.push({
         pathname: '/otp' as any,
         params: {
           selectedRole: selectedRole || '',
-        }
+        },
       });
     } catch (error) {
       const errMsg = getApiErrorMessage(error);
@@ -186,9 +215,7 @@ export default function RegisterScreen() {
       await verifyOtp(target, otpCode);
       setIsOtpVerified(true);
       setOtpError('');
-      Alert.alert('Xác thực thành công', 'Thông tin liên hệ của bạn đã được xác minh.', [
-        { text: 'Tiếp tục', onPress: () => setStep(3) },
-      ]);
+      setStep(3);
     } catch (error) {
       setOtpError(getApiErrorMessage(error));
       setOtpDigits(Array.from({ length: 6 }, () => ''));
@@ -231,6 +258,7 @@ export default function RegisterScreen() {
       password,
       confirmPassword,
       acceptedTerms,
+      acceptedPrivacy,
     });
     setErrors(validation.errors);
     setApiError('');
@@ -286,6 +314,7 @@ export default function RegisterScreen() {
             password={password}
             confirmPassword={confirmPassword}
             acceptedTerms={acceptedTerms}
+            acceptedPrivacy={acceptedPrivacy}
             isOtpSent={isOtpSent}
             isOtpVerified={isOtpVerified}
             sendingOtp={sendingOtp}
@@ -319,6 +348,10 @@ export default function RegisterScreen() {
             onToggleTerms={() => {
               setAcceptedTerms((value) => !value);
               setErrors((prev) => ({ ...prev, acceptedTerms: undefined }));
+            }}
+            onTogglePrivacy={() => {
+              setAcceptedPrivacy((value) => !value);
+              setErrors((prev) => ({ ...prev, acceptedPrivacy: undefined }));
             }}
             onSendOtp={handleSendOtp}
             onSetDigit={setDigit}
@@ -359,7 +392,11 @@ function RoleSelection({ onSelectRole }: RoleSelectionProps) {
           icon="spa"
           title="Tôi là Kỹ thuật viên Spa"
           description="Nhận đơn phù hợp khu vực và quản lý thu nhập minh bạch."
-          benefits={['Nhận đơn linh hoạt', 'Quản lý lịch làm việc', 'Xây dựng thương hiệu Spa']}
+          benefits={[
+            'Nhận đơn linh hoạt',
+            'Quản lý lịch làm việc',
+            'Thu nhập rõ ràng, có nút SOS bảo vệ',
+          ]}
           onPress={() => onSelectRole('worker')}
         />
       </View>
@@ -409,6 +446,7 @@ type RegisterFormProps = Readonly<{
   password: string;
   confirmPassword: string;
   acceptedTerms: boolean;
+  acceptedPrivacy: boolean;
   isOtpSent: boolean;
   isOtpVerified: boolean;
   sendingOtp: boolean;
@@ -426,6 +464,7 @@ type RegisterFormProps = Readonly<{
   onChangePassword: (value: string) => void;
   onChangeConfirmPassword: (value: string) => void;
   onToggleTerms: () => void;
+  onTogglePrivacy: () => void;
   onSendOtp: () => void;
   onSetDigit: (index: number, value: string) => void;
   onSubmit: () => void;
@@ -441,6 +480,7 @@ function RegisterForm({
   password,
   confirmPassword,
   acceptedTerms,
+  acceptedPrivacy,
   isOtpSent,
   isOtpVerified,
   sendingOtp,
@@ -458,80 +498,122 @@ function RegisterForm({
   onChangePassword,
   onChangeConfirmPassword,
   onToggleTerms,
+  onTogglePrivacy,
   onSendOtp,
   onSetDigit,
   onSubmit,
   onGoogleSignIn,
 }: RegisterFormProps) {
   const isWorker = selectedRole === 'worker';
-  const [showTerms, setShowTerms] = React.useState(false);
+  const [openDocument, setOpenDocument] = React.useState<'terms' | 'privacy' | null>(null);
+  const acceptedAll = acceptedTerms && acceptedPrivacy;
 
   const termsAgreement = (
     <>
-      <Pressable style={styles.termsRow} onPress={onToggleTerms}>
+      <Pressable
+        style={styles.termsRow}
+        onPress={onToggleTerms}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: acceptedTerms }}>
         <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
           {acceptedTerms ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
         </View>
         <Text style={styles.termsText}>
-          Tôi đủ 18 tuổi, đã đọc và đồng ý với{' '}
-          <Text style={styles.linkText} onPress={() => setShowTerms(true)}>
-            Điều khoản sử dụng, miễn trừ trách nhiệm
-          </Text>{' '}
-          và Chính sách bảo mật của TAYZEN.
+          Tôi đủ 18 tuổi và đồng ý{' '}
+          <Text style={styles.linkText} onPress={() => setOpenDocument('terms')}>
+            Điều khoản sử dụng
+          </Text>
         </Text>
       </Pressable>
       {errors.acceptedTerms ? <Text style={styles.errorText}>{errors.acceptedTerms}</Text> : null}
+      <Pressable
+        style={styles.termsRow}
+        onPress={onTogglePrivacy}
+        accessibilityRole="checkbox"
+        accessibilityState={{ checked: acceptedPrivacy }}>
+        <View style={[styles.checkbox, acceptedPrivacy && styles.checkboxChecked]}>
+          {acceptedPrivacy ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+        </View>
+        <Text style={styles.termsText}>
+          Tôi đồng ý cho TAYZEN xử lý dữ liệu cá nhân theo{' '}
+          <Text style={styles.linkText} onPress={() => setOpenDocument('privacy')}>
+            Chính sách bảo mật
+          </Text>
+        </Text>
+      </Pressable>
+      {errors.acceptedPrivacy ? (
+        <Text style={styles.errorText}>{errors.acceptedPrivacy}</Text>
+      ) : null}
     </>
   );
 
   return (
     <>
-      <TermsModal visible={showTerms} onClose={() => setShowTerms(false)} />
+      <TermsModal
+        visible={openDocument !== null}
+        document={openDocument ?? 'terms'}
+        onClose={() => setOpenDocument(null)}
+      />
       {/* Step Indicator */}
       <View style={styles.wizardIndicator}>
         <View style={styles.wizardIndicatorLineContainer}>
-          <View style={[styles.wizardIndicatorLine, step >= 2 && styles.wizardIndicatorLineActive]} />
-          <View style={[styles.wizardIndicatorLine, step >= 3 && styles.wizardIndicatorLineActive]} />
+          <View
+            style={[styles.wizardIndicatorLine, step >= 2 && styles.wizardIndicatorLineActive]}
+          />
+          <View
+            style={[styles.wizardIndicatorLine, step >= 3 && styles.wizardIndicatorLineActive]}
+          />
         </View>
         <View style={styles.wizardStepsRow}>
           <View style={styles.wizardStepCol}>
-            <View style={[
-              styles.wizardStepCircle,
-              step >= 1 && styles.wizardStepCircleActive,
-              step > 1 && styles.wizardStepCircleCompleted
-            ]}>
+            <View
+              style={[
+                styles.wizardStepCircle,
+                step >= 1 && styles.wizardStepCircleActive,
+                step > 1 && styles.wizardStepCircleCompleted,
+              ]}>
               {step > 1 ? (
                 <MaterialIcons name="check" size={14} color="#ffffff" />
               ) : (
-                <Text style={[styles.wizardStepNumber, step >= 1 && styles.wizardStepNumberActive]}>1</Text>
+                <Text style={[styles.wizardStepNumber, step >= 1 && styles.wizardStepNumberActive]}>
+                  1
+                </Text>
               )}
             </View>
-            <Text style={[styles.wizardStepLabel, step >= 1 && styles.wizardStepLabelActive]}>Vai trò</Text>
+            <Text style={[styles.wizardStepLabel, step >= 1 && styles.wizardStepLabelActive]}>
+              Vai trò
+            </Text>
           </View>
 
           <View style={styles.wizardStepCol}>
-            <View style={[
-              styles.wizardStepCircle,
-              step >= 2 && styles.wizardStepCircleActive,
-              step > 2 && styles.wizardStepCircleCompleted
-            ]}>
+            <View
+              style={[
+                styles.wizardStepCircle,
+                step >= 2 && styles.wizardStepCircleActive,
+                step > 2 && styles.wizardStepCircleCompleted,
+              ]}>
               {step > 2 ? (
                 <MaterialIcons name="check" size={14} color="#ffffff" />
               ) : (
-                <Text style={[styles.wizardStepNumber, step >= 2 && styles.wizardStepNumberActive]}>2</Text>
+                <Text style={[styles.wizardStepNumber, step >= 2 && styles.wizardStepNumberActive]}>
+                  2
+                </Text>
               )}
             </View>
-            <Text style={[styles.wizardStepLabel, step >= 2 && styles.wizardStepLabelActive]}>Xác thực</Text>
+            <Text style={[styles.wizardStepLabel, step >= 2 && styles.wizardStepLabelActive]}>
+              Xác thực
+            </Text>
           </View>
 
           <View style={styles.wizardStepCol}>
-            <View style={[
-              styles.wizardStepCircle,
-              step >= 3 && styles.wizardStepCircleActive
-            ]}>
-              <Text style={[styles.wizardStepNumber, step >= 3 && styles.wizardStepNumberActive]}>3</Text>
+            <View style={[styles.wizardStepCircle, step >= 3 && styles.wizardStepCircleActive]}>
+              <Text style={[styles.wizardStepNumber, step >= 3 && styles.wizardStepNumberActive]}>
+                3
+              </Text>
             </View>
-            <Text style={[styles.wizardStepLabel, step >= 3 && styles.wizardStepLabelActive]}>Đăng ký</Text>
+            <Text style={[styles.wizardStepLabel, step >= 3 && styles.wizardStepLabelActive]}>
+              Đăng ký
+            </Text>
           </View>
         </View>
       </View>
@@ -583,7 +665,11 @@ function RegisterForm({
                   <ActivityIndicator size="small" color="#ffffff" />
                 ) : (
                   <Text style={styles.sendOtpBtnText}>
-                    {cooldown > 0 ? `Gửi lại sau (${cooldown}s)` : isOtpSent ? 'Gửi lại mã' : 'Gửi mã OTP'}
+                    {cooldown > 0
+                      ? `Gửi lại sau (${cooldown}s)`
+                      : isOtpSent
+                        ? 'Gửi lại mã'
+                        : 'Gửi mã OTP'}
                   </Text>
                 )}
               </Pressable>
@@ -596,11 +682,11 @@ function RegisterForm({
               <View style={styles.divider} />
             </View>
 
-            <LawViolationBanner detail="TAYZEN chỉ cung cấp dịch vụ chăm sóc sức khoẻ, thư giãn, làm đẹp không nhạy cảm. Tài khoản vi phạm sẽ bị khoá vĩnh viễn và báo cơ quan chức năng." />
+            <LawViolationBanner detail="TAYZEN chỉ cung cấp dịch vụ chăm sóc sức khoẻ và làm đẹp theo chuẩn spa. Mọi hành vi trái pháp luật đều bị cấm và khoá tài khoản vĩnh viễn." />
             {termsAgreement}
 
             <Pressable
-              style={[styles.googleButton, !acceptedTerms && styles.googleButtonDisabled]}
+              style={[styles.googleButton, !acceptedAll && styles.googleButtonDisabled]}
               onPress={onGoogleSignIn}>
               <GoogleIcon size={24} />
               <Text style={styles.googleText}>Đăng ký với Google</Text>
@@ -623,14 +709,18 @@ function RegisterForm({
               </Pressable>
             </View>
 
-            <AuthTextField
-              icon="person"
-              value={fullName}
-              onChangeText={onChangeFullName}
-              placeholder="Nguyễn Văn An"
-              autoCapitalize="words"
-              error={errors.fullName}
-            />
+            <View style={styles.labeledField}>
+              <Text style={styles.fieldLabel}>Họ và tên</Text>
+              <AuthTextField
+                icon="person"
+                value={fullName}
+                onChangeText={onChangeFullName}
+                placeholder="Ví dụ: Nguyễn Văn An"
+                autoCapitalize="words"
+                accessibilityLabel="Họ và tên"
+                error={errors.fullName}
+              />
+            </View>
             <AuthTextField
               icon="lock"
               value={password}
@@ -881,6 +971,14 @@ const styles = StyleSheet.create({
   },
   verifiedFieldsBox: {
     gap: 14,
+  },
+  labeledField: {
+    gap: 6,
+  },
+  fieldLabel: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 14,
   },
   termsRow: {
     flexDirection: 'row',

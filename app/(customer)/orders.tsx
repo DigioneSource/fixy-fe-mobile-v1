@@ -106,7 +106,7 @@ const CATEGORIES_INFO: Record<
   { label: string; icon: React.ComponentProps<typeof MaterialIcons>['name']; color: string }
 > = {
   facial: { label: 'Chăm sóc da mặt', icon: 'face', color: '#0F382C' },
-  massage: { label: 'Massage toàn thân', icon: 'spa', color: '#E11D48' },
+  massage: { label: 'Massage trị liệu thư giãn', icon: 'spa', color: '#E11D48' },
   body: { label: 'Tẩy tế bào chết toàn thân', icon: 'self-improvement', color: '#D97706' },
   combo: { label: 'Gói Spa Chăm sóc toàn diện', icon: 'auto-awesome', color: '#7C3AED' },
 };

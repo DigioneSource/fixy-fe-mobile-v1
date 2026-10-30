@@ -18,7 +18,9 @@ import {
   SAFETY_HOTLINE,
   SOS_ISSUE_CATEGORY,
   SOS_ISSUE_PRIORITY,
+  SOS_LOCATION_TIMEOUT_MS,
 } from '@/features/safety/safety-config';
+import { formatClockTime, withTimeout } from '@/features/safety/location-utils';
 import { reportBookingIssue } from '@/services/api/bookings';
 import { getApiErrorMessage } from '@/services/api/client';
 
@@ -28,17 +30,41 @@ type SosButtonProps = {
   variant?: 'pill' | 'icon';
 };
 
-async function getCurrentCoords() {
+type SosCoords = {
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+  timestamp: number;
+};
+
+async function getCurrentCoords(): Promise<SosCoords | null> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') return null;
-    const last = await Location.getLastKnownPositionAsync();
+    // Ưu tiên vị trí gần nhất (≤ 60 giây, sai số ≤ 200 m) để trả về ngay.
+    const last = await Location.getLastKnownPositionAsync({ maxAge: 60000, requiredAccuracy: 200 });
     const position =
-      last ?? (await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }));
-    return position.coords;
+      last ??
+      (await withTimeout(
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+        SOS_LOCATION_TIMEOUT_MS
+      ));
+    return {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      accuracy: position.coords.accuracy ?? null,
+      timestamp: position.timestamp,
+    };
   } catch {
     return null;
   }
+}
+
+function describeCoords(coords: SosCoords | null) {
+  if (!coords) return 'Không lấy được vị trí.';
+  const accuracy =
+    coords.accuracy != null ? `Độ chính xác ±${Math.round(coords.accuracy)} m, ` : '';
+  return `Vị trí: ${mapsLink(coords)}\n${accuracy}đo lúc ${formatClockTime(coords.timestamp)}.`;
 }
 
 function mapsLink(coords: { latitude: number; longitude: number }) {
@@ -62,7 +88,10 @@ export function SosButton({ bookingId, role, variant = 'pill' }: SosButtonProps)
     }
     setSending(true);
     try {
-      const coords = await getCurrentCoords();
+      // Không để việc lấy vị trí chặn việc gửi: quá hạn thì gửi kèm "Không lấy được vị trí".
+      const coords = await withTimeout(getCurrentCoords(), SOS_LOCATION_TIMEOUT_MS).catch(
+        () => null
+      );
       const who = role === 'worker' ? 'Kỹ thuật viên' : 'Khách hàng';
       await reportBookingIssue(bookingId, {
         category: SOS_ISSUE_CATEGORY,
@@ -70,7 +99,7 @@ export function SosButton({ bookingId, role, variant = 'pill' }: SosButtonProps)
         subject: `[SOS] ${who} cần hỗ trợ khẩn cấp`,
         description: [
           `${who} bấm nút SOS lúc ${new Date().toLocaleString('vi-VN')}.`,
-          coords ? `Vị trí: ${mapsLink(coords)}` : 'Không lấy được vị trí (chưa cấp quyền GPS).',
+          describeCoords(coords),
         ].join('\n'),
       });
       setOpen(false);
@@ -100,6 +129,7 @@ export function SosButton({ bookingId, role, variant = 'pill' }: SosButtonProps)
     <>
       <Pressable
         onPress={() => setOpen(true)}
+        hitSlop={variant === 'pill' ? 8 : undefined}
         style={variant === 'icon' ? styles.iconButton : styles.pillButton}
         accessibilityRole="button"
         accessibilityLabel="SOS – hỗ trợ khẩn cấp">
@@ -167,9 +197,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    height: 36,
+    height: 40,
     paddingHorizontal: 12,
-    borderRadius: 18,
+    borderRadius: 20,
     backgroundColor: '#D92D20',
   },
   pillText: {
@@ -178,9 +208,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#D92D20',

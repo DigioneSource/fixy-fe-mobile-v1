@@ -11,7 +11,12 @@ import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signal
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { SosButton } from '@/components/safety/sos-button';
-import { BookingStatus, BookingTracking, getBookingTracking } from '@/services/api/bookings';
+import {
+  BookingStatus,
+  BookingTracking,
+  getBookingTracking,
+  isTerminalBookingStatus,
+} from '@/services/api/bookings';
 import { getDistanceAndDuration, getDirections, GOONG_MAPTILES_API_KEY, GOONG_API_KEY } from '@/services/api/goong';
 import { useAuthStore } from '@/store/store';
 import { getApiBaseUrl } from '@/config/env';
@@ -82,7 +87,11 @@ export default function BookingTrackingScreen() {
     queryKey: ['bookingTracking', params.bookingId],
     queryFn: () => getBookingTracking(params.bookingId || ''),
     enabled: !!params.bookingId,
-    refetchInterval: 10000,
+    // Chỉ hỏi lại khi KTV còn đang trên đường/đang làm; đơn đã kết thúc thì dừng.
+    refetchInterval: (query) => {
+      const status = Number((query.state.data as any)?.status ?? currentStatusNum);
+      return isTerminalBookingStatus(status) ? false : 10000;
+    },
   });
 
   // Realtime location from SignalR

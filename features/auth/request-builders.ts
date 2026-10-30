@@ -7,7 +7,6 @@ export const AUTH_ENDPOINTS = {
   refreshToken: '/auth/token/refresh',
   changePassword: '/auth/password/change',
   resetPassword: '/auth/reset-password',
-  forgotPassword: '/auth/forgot-password',
 } as const;
 
 export type RegisterBody = {
@@ -48,10 +47,6 @@ export function buildChangePasswordBody(target: string, oldPassword: string, new
 
 export function buildResetPasswordBody(target: string, newPassword: string) {
   return { target, newPassword };
-}
-
-export function buildForgotPasswordBody(target: string) {
-  return { target };
 }
 
 export function buildGoogleLoginBody(credential: string, roleRegister?: number) {

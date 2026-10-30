@@ -162,7 +162,7 @@ export default function WorkerWalletScreen() {
       Alert.alert('Yêu cầu thành công', 'Yêu cầu rút tiền đang được xem duyệt.');
     },
     onError: (err: any) => {
-      Alert.alert('Lỗi', err?.message || 'Không thể gửi yêu cầu rút tiền.');
+      Alert.alert('Lỗi', getApiErrorMessage(err) || 'Không thể gửi yêu cầu rút tiền.');
     },
   });
 
@@ -180,6 +180,12 @@ export default function WorkerWalletScreen() {
       Alert.alert('Lỗi', err?.message || 'Không thể thêm tài khoản ngân hàng.');
     },
   });
+
+  // Số dư khả dụng = số dư hiện tại trừ các yêu cầu rút đang chờ duyệt (khớp dòng "đang chờ duyệt" trên thẻ ví).
+  const pendingPayoutTotal = (payoutRequests || [])
+    .filter((r) => getPayoutStatus(r) === 0)
+    .reduce((sum, r) => sum + (r.amount || 0), 0);
+  const availableBalance = Math.max(0, (wallet?.balance ?? 0) - pendingPayoutTotal);
 
   const displayBanks = vietqrBanks.length > 0 ? vietqrBanks : TOP_BANKS;
   const selectedBankLabel = getBankDisplayName(selectedBank) || 'Chọn ngân hàng';
@@ -729,9 +735,17 @@ export default function WorkerWalletScreen() {
                       styles.modalSubmitBtnDisabled,
                   ]}
                   onPress={() => {
-                    const amount = Number.parseInt(withdrawAmount, 10);
+                    // Bỏ mọi ký tự không phải số ("50.000" → 50000) trước khi parse
+                    const amount = Number.parseInt(withdrawAmount.replace(/\D/g, ''), 10);
                     if (Number.isNaN(amount) || amount < 50000) {
                       Alert.alert('Lỗi', 'Số tiền rút tối thiểu là 50.000đ.');
+                      return;
+                    }
+                    if (amount > availableBalance) {
+                      Alert.alert(
+                        'Vượt số dư',
+                        `Số tiền rút vượt số dư khả dụng (${formatCurrency(availableBalance)}).`
+                      );
                       return;
                     }
                     withdrawMutation.mutate({ payoutAccountId: selectedPayoutAccountId, amount });

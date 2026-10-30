@@ -9,7 +9,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/montserrat';
 import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
@@ -19,19 +19,12 @@ import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 import { NotificationPopupObserver } from '@/components/notifications/notification-popup-observer';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { queryClient } from '@/services/query-client';
 import { useAuthStore } from '@/store/store';
 import { NAV_THEME } from '@/theme';
 
 export { ErrorBoundary } from 'expo-router';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,18 +26,19 @@ const PayOSWebView: React.FC<PayOSWebViewProps> = ({
   onError,
 }) => {
   const [loading, setLoading] = useState(true);
-  const [hasProcessed, setHasProcessed] = useState(false);
+  // Dùng ref: hai sự kiện điều hướng có thể tới trong cùng một nhịp, state chưa kịp cập nhật sẽ gọi onSuccess hai lần.
+  const hasProcessedRef = useRef(false);
 
   // Reset state when modal opens
   useEffect(() => {
     if (visible) {
       setLoading(true);
-      setHasProcessed(false);
+      hasProcessedRef.current = false;
     }
   }, [visible]);
 
   const checkAndHandleCallback = (url: string): boolean => {
-    if (hasProcessed) {
+    if (hasProcessedRef.current) {
       return true;
     }
 
@@ -45,7 +46,8 @@ const PayOSWebView: React.FC<PayOSWebViewProps> = ({
     const isReturnUrl =
       url.includes('/payment/payos-return') ||
       url.includes('/payment/payos-cancel') ||
-      url.includes('fixy.vn/payment/');
+      url.includes('fixy.vn/payment/') ||
+      url.includes('tayzen.vn/payment/');
 
     if (!isReturnUrl) {
       return false;
@@ -67,7 +69,7 @@ const PayOSWebView: React.FC<PayOSWebViewProps> = ({
       }
 
       // Mark as processed to prevent duplicate handling
-      setHasProcessed(true);
+      hasProcessedRef.current = true;
       setLoading(false);
 
       const status = params['status'] || params['code'] || '';

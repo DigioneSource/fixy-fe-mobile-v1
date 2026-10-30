@@ -26,7 +26,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const BADGE_CONFIG: Record<number, { text: string; color: string }> = {
   0: { text: 'Mới đến', color: '#3B82F6' },
-  1: { text: 'Cập nhật', color: '#10B981' },
+  1: { text: 'Được đánh giá cao', color: '#10B981' },
   2: { text: 'Chất lượng', color: '#EA580C' },
   3: { text: 'KTV Vàng', color: '#D97706' },
 };
@@ -431,12 +431,19 @@ export default function WorkerDetailScreen() {
             <View style={styles.glowCareCommitments}>
               <View style={styles.commitmentLine}>
                 <MaterialIcons name="check-box" size={18} color="#0F382C" />
-                <Text style={styles.commitmentText}>Không mất tiền tip, không phí di chuyển</Text>
+                <Text style={styles.commitmentText}>Không phụ phí, không tiền boa bắt buộc</Text>
               </View>
               <View style={styles.commitmentLine}>
                 <MaterialIcons name="check-box" size={18} color="#0F382C" />
                 <Text style={styles.commitmentText}>Cam kết chất lượng dịch vụ minh bạch</Text>
               </View>
+              {/* status 1 = hồ sơ KTV đã được duyệt (cùng quy ước với login.tsx) */}
+              {worker?.status === 1 ? (
+                <View style={styles.commitmentLine}>
+                  <MaterialIcons name="verified-user" size={18} color="#0F382C" />
+                  <Text style={styles.commitmentText}>KTV đã xác minh CCCD với TAYZEN.</Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -447,7 +454,7 @@ export default function WorkerDetailScreen() {
               <Text style={styles.bioHeadingTitle}>Giới thiệu bản thân</Text>
             </View>
             <Text style={styles.bioText} numberOfLines={showFullBio ? undefined : 3}>
-              {worker?.bio || 'Kỹ thuật viên chuyên nghiệp đã được xác thực bởi TAYZEN.'}
+              {worker?.bio || 'KTV chưa cập nhật phần giới thiệu.'}
             </Text>
 
             {(worker?.bio && worker.bio.length > 50) ? (

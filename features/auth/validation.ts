@@ -19,6 +19,7 @@ export type RegisterFormInput = {
   password: string;
   confirmPassword: string;
   acceptedTerms: boolean;
+  acceptedPrivacy: boolean;
 };
 
 export type LoginFormInput = {
@@ -48,7 +49,12 @@ export function validateRegisterForm(
   if (input.password !== input.confirmPassword) {
     errors.confirmPassword = 'Mật khẩu xác nhận không khớp.';
   }
-  if (!input.acceptedTerms) errors.acceptedTerms = 'Bạn cần đồng ý với điều khoản sử dụng.';
+  if (!input.acceptedTerms) {
+    errors.acceptedTerms = 'Bạn cần xác nhận đủ 18 tuổi và đồng ý Điều khoản sử dụng.';
+  }
+  if (!input.acceptedPrivacy) {
+    errors.acceptedPrivacy = 'Bạn cần đồng ý cho TAYZEN xử lý dữ liệu cá nhân.';
+  }
 
   if (hasErrors(errors)) return { valid: false, errors };
 

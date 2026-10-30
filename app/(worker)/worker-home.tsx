@@ -202,7 +202,7 @@ export default function WorkerHomeScreen() {
                 </View>
                 <Text style={styles.bannerTitle}>Tài khoản tạm khóa</Text>
                 <Text style={styles.bannerDesc}>
-                  Tài khoản đối tác kỹ thuật viên của bạn hiện đang tạm thời bị khóa. Vui lòng liên hệ với bộ phận CSKH hoặc đường dây nóng hotline để được trợ giúp giải đáp thắc mắc.
+                  Tài khoản đối tác kỹ thuật viên của bạn hiện đang tạm thời bị khóa. Vui lòng liên hệ với tổng đài hỗ trợ TAYZEN để được trợ giúp giải đáp thắc mắc.
                 </Text>
               </View>
             )}

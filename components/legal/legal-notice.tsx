@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   LAW_VIOLATION_NOTICE,
   LEGAL_VERSION,
+  LegalSection,
+  PRIVACY_POLICY,
   REGISTRATION_TERMS,
 } from '@/features/legal/legal-content';
 
@@ -21,21 +23,33 @@ export function LawViolationBanner({ detail }: Readonly<{ detail?: string }>) {
   );
 }
 
-export function TermsModal({ visible, onClose }: Readonly<{ visible: boolean; onClose: () => void }>) {
+type LegalDocument = 'terms' | 'privacy';
+
+const LEGAL_DOCUMENTS: Record<LegalDocument, { title: string; sections: LegalSection[] }> = {
+  terms: { title: 'Điều khoản sử dụng', sections: REGISTRATION_TERMS },
+  privacy: { title: 'Chính sách bảo mật', sections: PRIVACY_POLICY },
+};
+
+export function TermsModal({
+  visible,
+  onClose,
+  document = 'terms',
+}: Readonly<{ visible: boolean; onClose: () => void; document?: LegalDocument }>) {
   const insets = useSafeAreaInsets();
+  const { title, sections } = LEGAL_DOCUMENTS[document];
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={[styles.modalScreen, { paddingTop: insets.top }]}>
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Điều khoản sử dụng</Text>
+          <Text style={styles.modalTitle}>{title}</Text>
           <Pressable onPress={onClose} hitSlop={12} accessibilityLabel="Đóng">
             <MaterialIcons name="close" size={24} color="#0F382C" />
           </Pressable>
         </View>
         <ScrollView contentContainerStyle={styles.modalBody}>
-          <LawViolationBanner />
-          {REGISTRATION_TERMS.map((section) => (
+          {document === 'terms' ? <LawViolationBanner /> : null}
+          {sections.map((section) => (
             <View key={section.title} style={styles.section}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
               {section.items.map((item) => (

@@ -591,8 +591,9 @@ export async function checkAvailability(
       }
     );
     return normalizeAvailabilityResponse(response.data);
-  } catch (error) {
-    console.warn('[workers API] Error checking availability', error);
+  } catch (error: any) {
+    // Lỗi mạng/máy chủ: ném ra để khách thấy đúng lỗi, không báo nhầm "KTV không rảnh".
+    if (!error?.response || error.response.status >= 500) throw error;
     return false;
   }
 }

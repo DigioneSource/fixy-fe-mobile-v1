@@ -5,8 +5,8 @@ import * as React from 'react';
 import {
   ActivityIndicator,
   Image,
+  FlatList,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -120,101 +120,105 @@ export default function WorkerJobsScreen() {
           <ActivityIndicator size="large" color="#0F382C" />
         </View>
       ) : (
-        <ScrollView
+        <FlatList
+          data={displayedJobs}
+          keyExtractor={(job) => job.id}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}>
-          <View style={styles.jobsList}>
-            {displayedJobs.length > 0 ? (
-              displayedJobs.map((job) => {
-                const category = categories.find(
-                  (c) => c.id === job.categoryId || c.code === job.categoryId
-                );
-                return (
-                  <Pressable
-                    key={job.id}
-                    style={styles.jobCard}
-                    onPress={() => router.push(`/worker-job-detail?id=${job.id}` as any)}>
-                    <View style={styles.jobRow}>
-                      {category?.imageUrl ? (
-                        <View style={styles.jobIconBox}>
-                          <Image
-                            source={{ uri: category.imageUrl }}
-                            style={{ width: 48, height: 48, borderRadius: 12 }}
-                            resizeMode="contain"
-                          />
-                        </View>
-                      ) : (
-                        <View style={[styles.jobIconBox, { backgroundColor: '#F2F7F2' }]}>
-                          <MaterialIcons
-                            name={getWorkerCategoryIcon(job.categoryId) as any}
-                            size={24}
-                            color="#0F382C"
-                          />
-                        </View>
-                      )}
-                      <View style={styles.jobDetails}>
-                        <View style={styles.jobTitleRow}>
-                          <Text style={styles.jobTitle} numberOfLines={1}>
-                            {job.description || 'Dịch vụ Spa'}
-                          </Text>
-                          <Text style={styles.jobPrice}>
-                            {formatCurrency(job.finalPrice || job.finalAmount || job.estimatedAmount || job.estimatedPrice || 0)}
-                          </Text>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                          <MaterialIcons name="place" size={14} color="#818A91" />
-                          <Text style={styles.jobAddressText} numberOfLines={1}>
-                            {job.address}
-                          </Text>
-                        </View>
-
-                        <View style={styles.infoRow}>
-                          <MaterialIcons name="access-time" size={14} color="#818A91" />
-                          <Text style={styles.jobTimeText}>
-                            {job.scheduledType === 0 ||
-                            String(job.scheduledType).toLowerCase() === 'now'
-                              ? 'Làm ngay'
-                              : 'Hẹn lịch'}
-                            {job.scheduledAt && ` • ${formatDateTime(job.scheduledAt)}`}
-                          </Text>
-                        </View>
-
-                        {STATUS_STYLES[job.status] && (
-                          <View style={styles.statusRow}>
-                            <View
-                              style={[
-                                styles.statusBadge,
-                                { backgroundColor: STATUS_STYLES[job.status].bg },
-                              ]}>
-                              <Text
-                                style={[
-                                  styles.statusBadgeText,
-                                  { color: STATUS_STYLES[job.status].color },
-                                ]}>
-                                {STATUS_STYLES[job.status].label}
-                              </Text>
-                            </View>
-                          </View>
-                        )}
-                      </View>
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={JobSeparator}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialIcons name="assignment-late" size={40} color="#818A91" />
+              <Text style={styles.emptyText}>Không có đơn hàng nào.</Text>
+            </View>
+          }
+          renderItem={({ item: job }) => {
+            const category = categories.find(
+              (c) => c.id === job.categoryId || c.code === job.categoryId
+            );
+            return (
+              <Pressable
+                key={job.id}
+                style={styles.jobCard}
+                onPress={() => router.push(`/worker-job-detail?id=${job.id}` as any)}>
+                <View style={styles.jobRow}>
+                  {category?.imageUrl ? (
+                    <View style={styles.jobIconBox}>
+                      <Image
+                        source={{ uri: category.imageUrl }}
+                        style={{ width: 48, height: 48, borderRadius: 12 }}
+                        resizeMode="contain"
+                      />
                     </View>
-                  </Pressable>
-                );
-              })
-            ) : (
-              <View style={styles.emptyContainer}>
-                <MaterialIcons name="assignment-late" size={40} color="#818A91" />
-                <Text style={styles.emptyText}>Không có đơn hàng nào.</Text>
-              </View>
-            )}
-          </View>
-        </ScrollView>
+                  ) : (
+                    <View style={[styles.jobIconBox, { backgroundColor: '#F2F7F2' }]}>
+                      <MaterialIcons
+                        name={getWorkerCategoryIcon(job.categoryId) as any}
+                        size={24}
+                        color="#0F382C"
+                      />
+                    </View>
+                  )}
+                  <View style={styles.jobDetails}>
+                    <View style={styles.jobTitleRow}>
+                      <Text style={styles.jobTitle} numberOfLines={1}>
+                        {job.description || 'Dịch vụ Spa'}
+                      </Text>
+                      <Text style={styles.jobPrice}>
+                        {formatCurrency(job.finalPrice || job.finalAmount || job.estimatedAmount || job.estimatedPrice || 0)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoRow}>
+                      <MaterialIcons name="place" size={14} color="#818A91" />
+                      <Text style={styles.jobAddressText} numberOfLines={1}>
+                        {job.address}
+                      </Text>
+                    </View>
+
+                    <View style={styles.infoRow}>
+                      <MaterialIcons name="access-time" size={14} color="#818A91" />
+                      <Text style={styles.jobTimeText}>
+                        {job.scheduledType === 0 ||
+                        String(job.scheduledType).toLowerCase() === 'now'
+                          ? 'Làm ngay'
+                          : 'Hẹn lịch'}
+                        {job.scheduledAt && ` • ${formatDateTime(job.scheduledAt)}`}
+                      </Text>
+                    </View>
+
+                    {STATUS_STYLES[job.status] && (
+                      <View style={styles.statusRow}>
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            { backgroundColor: STATUS_STYLES[job.status].bg },
+                          ]}>
+                          <Text
+                            style={[
+                              styles.statusBadgeText,
+                              { color: STATUS_STYLES[job.status].color },
+                            ]}>
+                            {STATUS_STYLES[job.status].label}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </Pressable>
+            );
+          }}
+        />
       )}
 
       <WorkerTabBar activeTab="jobs" />
     </View>
   );
+}
+
+function JobSeparator() {
+  return <View style={styles.jobSeparator} />;
 }
 
 const styles = StyleSheet.create({
@@ -250,7 +254,7 @@ const styles = StyleSheet.create({
   subtabTextActive: { color: '#0F382C', fontFamily: 'Montserrat_700Bold' },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   scrollContent: { padding: 16, paddingBottom: 110 },
-  jobsList: { gap: 16 },
+  jobSeparator: { height: 16 },
   jobCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,

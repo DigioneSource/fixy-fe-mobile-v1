@@ -2,7 +2,6 @@ import {
   AUTH_ENDPOINTS,
   RegisterBody,
   buildChangePasswordBody,
-  buildForgotPasswordBody,
   buildGoogleLoginBody,
   buildLoginBody,
   buildOtpSendBody,
@@ -11,6 +10,7 @@ import {
   buildRegisterBody,
   buildResetPasswordBody,
 } from '@/features/auth/request-builders';
+import { FORGOT_PASSWORD_OTP_PURPOSE } from '@/features/auth/constants';
 
 import { apiClient } from '@/services/api/client';
 
@@ -61,12 +61,9 @@ export async function resetPassword(target: string, newPassword: string) {
   return response.data;
 }
 
+// Backend không có /auth/forgot-password: quên mật khẩu = gửi OTP với mục đích FORGOT_PASSWORD.
 export async function forgotPassword(target: string) {
-  const response = await apiClient.post(
-    AUTH_ENDPOINTS.forgotPassword,
-    buildForgotPasswordBody(target)
-  );
-  return response.data;
+  return sendOtp(target, FORGOT_PASSWORD_OTP_PURPOSE);
 }
 
 export async function loginGoogle(credential: string, roleRegister?: number) {

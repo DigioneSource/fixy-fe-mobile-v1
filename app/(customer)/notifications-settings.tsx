@@ -80,7 +80,7 @@ export default function NotificationSettingsScreen() {
                   <Text style={styles.settingLabel}>Đơn đặt lịch mới</Text>
                 </View>
                 <Text style={styles.settingDescription}>
-                  Cập nhật khi có đơn đặt lịch mới hoặc thợ nhận đơn.
+                  Cập nhật khi có đơn đặt lịch mới hoặc KTV nhận đơn.
                 </Text>
               </View>
               <Switch
@@ -124,7 +124,7 @@ export default function NotificationSettingsScreen() {
                   <Text style={styles.settingLabel}>Cập nhật tiến độ đơn</Text>
                 </View>
                 <Text style={styles.settingDescription}>
-                  Nhận tin tức khi thợ di chuyển, đã đến nơi, đang làm việc.
+                  Nhận tin tức khi KTV di chuyển, đã đến nơi, đang làm việc.
                 </Text>
               </View>
               <Switch

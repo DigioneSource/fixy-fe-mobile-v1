@@ -29,14 +29,14 @@ const SPA_BANNER_CARDS = [
   {
     id: 'health',
     title: 'Sức khoẻ tại nhà',
-    subtitle: 'Lấy ráy tai, massage & trị liệu',
+    subtitle: 'Massage cổ vai gáy, trị liệu đau mỏi',
     category: 'suc-khoe',
     image: require('@/assets/SUC KHOE TAI NHA.webp'),
   },
   {
     id: 'beauty',
     title: 'Làm đẹp tại nhà',
-    subtitle: 'Nails,wax, tẩy tế bào chết',
+    subtitle: 'Làm móng, chăm sóc da, tẩy tế bào chết',
     category: 'lam-dep',
     image: require('@/assets/LAM DEP TAI NHA.webp'),
   },
@@ -357,7 +357,7 @@ export default function HomeScreen() {
             featuredWorkers.map((item: any) => {
               const BADGE_CONFIG: Record<number, { text: string; color: string }> = {
                 0: { text: 'Mới đến', color: '#4A90E2' },
-                1: { text: 'Mới cập nhật', color: '#E05297' },
+                1: { text: 'Được đánh giá cao', color: '#E05297' },
                 2: { text: 'Chất lượng', color: '#E68A2E' },
                 3: { text: 'Vàng', color: '#D4AF37' },
               };

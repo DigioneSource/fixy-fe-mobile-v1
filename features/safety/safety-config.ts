@@ -16,11 +16,19 @@ export const SAFETY_HOTLINE = '';
 
 // KTV chỉ được xác nhận "Đã đến nơi" khi ở trong bán kính này quanh địa chỉ khách.
 export const CHECK_IN_RADIUS_METERS = 500;
+// Từ chối check-in khi sai số GPS lớn hơn ngưỡng này (m).
+export const CHECK_IN_MAX_ACCURACY_METERS = 100;
+// Thời hạn chờ lấy vị trí khi check-in và khi bấm SOS (ms).
+export const CHECK_IN_LOCATION_TIMEOUT_MS = 15000;
+export const SOS_LOCATION_TIMEOUT_MS = 10000;
 
 // Backend: SupportCategory.Dispute = 0, SupportPriority.Urgent = 3
 export const SOS_ISSUE_CATEGORY = 0;
 export const SOS_ISSUE_PRIORITY = 3;
 export const REPORT_ISSUE_PRIORITY_HIGH = 2;
+// Backend: SupportCategory.Other = 3, SupportPriority.Low = 0
+export const ISSUE_CATEGORY_OTHER = 3;
+export const REPORT_ISSUE_PRIORITY_LOW = 0;
 
 export enum WorkerGenderPreference {
   Any = 0,

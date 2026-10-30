@@ -16,7 +16,25 @@
     "plugins": [
       "expo-router",
       "@react-native-community/datetimepicker",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "TAYZEN dùng vị trí để KTV tìm đến địa chỉ của bạn, xác nhận đã đến nơi và gửi vị trí khi bạn bấm SOS.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "TAYZEN dùng camera để chụp CCCD, ảnh đại diện và ảnh hoàn thành dịch vụ.",
+          "photosPermission": "TAYZEN cần truy cập ảnh để bạn tải ảnh đại diện, CCCD và chứng chỉ.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -42,7 +60,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B4824"
       },
-      "package": "com.fixy.app"
+      "package": "com.fixy.app",
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "extra": {
       "vietnamProvincesApiUrl": "https://provinces.open-api.vn/api/v2",

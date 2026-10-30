@@ -20,6 +20,10 @@ import { Address, getMyAddresses } from '@/services/api/addresses';
 import { useAuthStore } from '@/store/store';
 import { DeleteAccountModal } from '@/components/account/delete-account-modal';
 
+// Ẩn ô "Giới thiệu bạn bè": chưa có chương trình giới thiệu thật phía backend nên không hứa voucher.
+// Chờ backend có chương trình giới thiệu thật rồi mới bật lại.
+const FEATURE_REFERRAL: boolean = false;
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const logout = useAuthStore((state) => state.logout);
@@ -146,15 +150,17 @@ export default function ProfileScreen() {
               <Text style={styles.actionCardSub}>Đối tác TAYZEN</Text>
             </Pressable>
 
-            <Pressable
-              style={styles.actionCard}
-              onPress={() => Alert.alert('Giới thiệu bạn bè', 'Chia sẻ mã giới thiệu của bạn để cả 2 nhận ngay Voucher 50k!')}>
-              <View style={[styles.actionIconCircle, { backgroundColor: '#FEF3C7' }]}>
-                <MaterialIcons name="card-giftcard" size={22} color="#D97706" />
-              </View>
-              <Text style={styles.actionCardTitle}>Giới thiệu</Text>
-              <Text style={styles.actionCardSub}>bạn bè 🎁</Text>
-            </Pressable>
+            {FEATURE_REFERRAL ? (
+              <Pressable
+                style={styles.actionCard}
+                onPress={() => Alert.alert('Giới thiệu bạn bè', 'Chia sẻ mã giới thiệu của bạn để cả 2 nhận ngay Voucher 50k!')}>
+                <View style={[styles.actionIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                  <MaterialIcons name="card-giftcard" size={22} color="#D97706" />
+                </View>
+                <Text style={styles.actionCardTitle}>Giới thiệu</Text>
+                <Text style={styles.actionCardSub}>bạn bè 🎁</Text>
+              </Pressable>
+            ) : null}
           </View>
 
           {/* Menu Items Group Matching Spec 4.10 */}

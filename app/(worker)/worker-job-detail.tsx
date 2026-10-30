@@ -5,6 +5,7 @@ import * as React from 'react';
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   Image,
   Linking,
   Keyboard,
@@ -35,10 +36,19 @@ import {
   completeBooking,
   getBookingDetails,
   updateWorkerLocation,
+  reportBookingIssue,
 } from '@/services/api/bookings';
 import { ReportCustomerModal } from '@/components/safety/report-customer-modal';
 import { SosButton } from '@/components/safety/sos-button';
-import { CHECK_IN_RADIUS_METERS, distanceInMeters } from '@/features/safety/safety-config';
+import {
+  CHECK_IN_LOCATION_TIMEOUT_MS,
+  CHECK_IN_MAX_ACCURACY_METERS,
+  CHECK_IN_RADIUS_METERS,
+  ISSUE_CATEGORY_OTHER,
+  REPORT_ISSUE_PRIORITY_LOW,
+  distanceInMeters,
+} from '@/features/safety/safety-config';
+import { formatClockTime, withTimeout } from '@/features/safety/location-utils';
 import { getMediaUrl, uploadMediaFiles, MediaCategory, MediaOwnerType } from '@/services/api/media';
 import { getApiErrorMessage } from '@/services/api/client';
 import { fetchCategories } from '@/services/api/categories';
@@ -156,24 +166,59 @@ export default function WorkerJobDetailScreen() {
   const locationWatchRef = React.useRef<Location.LocationSubscription | null>(null);
   const locationIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const lastSentLocationRef = React.useRef<{ lat: number; lng: number; time: number } | null>(null);
+  // Đang trong lúc bật watcher (chờ quyền / vị trí đầu tiên) — tránh bật hai watcher cùng lúc
+  const trackingStartingRef = React.useRef(false);
+  // Có nên theo dõi lúc này không (đang di chuyển + app ở tiền cảnh + màn hình còn mở)
+  const shouldTrackRef = React.useRef(false);
 
-  // Cleanup location tracking on unmount or when booking is no longer active
+  // Khoá chống bấm đúp cho các nút hành động (nhận việc, xuất phát, đến nơi, bắt đầu, hoàn thành)
+  const actionLockRef = React.useRef(false);
+  const acquireActionLock = () => {
+    if (actionLockRef.current) return false;
+    actionLockRef.current = true;
+    return true;
+  };
+  const releaseActionLock = () => {
+    actionLockRef.current = false;
+  };
+  const runLocked = (action: () => void) => {
+    if (!acquireActionLock()) return;
+    action();
+  };
+
+  // Chỉ theo dõi vị trí khi app ở tiền cảnh (không dùng quyền chạy nền)
+  const [appState, setAppState] = React.useState(AppState.currentState);
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', setAppState);
+    return () => subscription.remove();
+  }, []);
+
+  // Tự bật lại theo dõi khi đơn đang ở trạng thái Đang di chuyển (kể cả khi mở lại màn hình),
+  // tự dừng khi trạng thái đổi khác hoặc app xuống nền.
+  const isTraveling = Number(job?.status) === BookingStatus.Traveling;
+  const appActive = appState === 'active';
+  React.useEffect(() => {
+    const shouldTrack = isTraveling && appActive;
+    shouldTrackRef.current = shouldTrack;
+    if (shouldTrack) {
+      if (!locationWatchRef.current) startLocationTracking();
+    } else {
+      stopLocationTracking();
+    }
+  }, [isTraveling, appActive]);
+
+  // Dừng theo dõi khi màn hình bị gỡ
   React.useEffect(() => {
     return () => {
+      shouldTrackRef.current = false;
       stopLocationTracking();
     };
   }, []);
 
-  // Auto-stop tracking if booking status moves past Traveling (e.g. Arrived, InProgress, etc.)
-  React.useEffect(() => {
-    const status = Number(job?.status);
-    if (status >= BookingStatus.Arrived && locationWatchRef.current) {
-      stopLocationTracking();
-    }
-  }, [job?.status]);
-
   /** Start GPS tracking and send location updates to server */
   async function startLocationTracking() {
+    if (locationWatchRef.current || trackingStartingRef.current) return;
+    trackingStartingRef.current = true;
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -221,10 +266,17 @@ export default function WorkerJobDetailScreen() {
         }
       );
 
+      // Trạng thái đã đổi (hoặc màn hình đã đóng) trong lúc chờ — huỷ watcher vừa tạo
+      if (!shouldTrackRef.current) {
+        subscription.remove();
+        return;
+      }
       locationWatchRef.current = subscription;
       console.log('[LocationTracking] Started GPS tracking');
     } catch (error) {
       console.error('[LocationTracking] Error starting GPS tracking:', error);
+    } finally {
+      trackingStartingRef.current = false;
     }
   }
 
@@ -248,7 +300,7 @@ export default function WorkerJobDetailScreen() {
     (job?.categoryId === 'facial'
       ? 'Chăm sóc da mặt'
       : job?.categoryId === 'massage'
-        ? 'Massage toàn thân'
+        ? 'Massage trị liệu thư giãn'
         : job?.categoryId === 'body'
           ? 'Tẩy tế bào chết toàn thân'
           : job?.categoryId === 'combo'
@@ -263,6 +315,7 @@ export default function WorkerJobDetailScreen() {
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
       Alert.alert('Thành công', 'Bạn đã chấp nhận công việc này.');
     },
+    onSettled: releaseActionLock,
     onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
@@ -313,10 +366,10 @@ export default function WorkerJobDetailScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
-      // Start GPS tracking so location is broadcast to customer
-      startLocationTracking();
+      // Theo dõi GPS tự bật qua effect khi trạng thái đơn chuyển sang Đang di chuyển
       Alert.alert('Bắt đầu di chuyển', 'Chúc bạn thượng lộ bình an! Vị trí của bạn đang được chia sẻ với khách hàng.');
     },
+    onSettled: releaseActionLock,
     onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
@@ -337,6 +390,7 @@ export default function WorkerJobDetailScreen() {
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
       Alert.alert('Đã đến nơi', 'Vui lòng chuẩn bị và tiến hành dịch vụ Spa.');
     },
+    onSettled: releaseActionLock,
     onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
@@ -355,6 +409,7 @@ export default function WorkerJobDetailScreen() {
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
       Alert.alert('Bắt đầu dịch vụ', 'Bắt đầu bấm giờ dịch vụ Spa.');
     },
+    onSettled: releaseActionLock,
     onError: (err) => {
       queryClient.invalidateQueries({ queryKey: ['booking', id] });
       queryClient.invalidateQueries({ queryKey: ['workerBookings'] });
@@ -389,6 +444,7 @@ export default function WorkerJobDetailScreen() {
       setCompletionImages([]);
       Alert.alert('Đã nghiệm thu', 'Công việc đã hoàn thành thành công.');
     },
+    onSettled: releaseActionLock,
     onError: (err) => {
       console.error(err);
       const msg = getApiErrorMessage(err);
@@ -435,14 +491,30 @@ export default function WorkerJobDetailScreen() {
     });
   };
 
+  // Đơn không có toạ độ: ghi một report-issue mức thấp kèm vị trí KTV để lưu dấu vết check-in.
+  const logArrivalWithoutTarget = (position: Location.LocationObject) => {
+    if (!id) return;
+    const { latitude, longitude, accuracy } = position.coords;
+    reportBookingIssue(id, {
+      category: ISSUE_CATEGORY_OTHER,
+      priority: REPORT_ISSUE_PRIORITY_LOW,
+      subject: '[Check-in] Đơn không có toạ độ – ghi nhận vị trí KTV',
+      description: [
+        `KTV xác nhận "Đã đến nơi" lúc ${formatClockTime(Date.now())} ${new Date().toLocaleDateString('vi-VN')}.`,
+        `Vị trí KTV: https://maps.google.com/?q=${latitude},${longitude}`,
+        accuracy != null
+          ? `Độ chính xác ±${Math.round(accuracy)} m, đo lúc ${formatClockTime(position.timestamp)}.`
+          : `Đo lúc ${formatClockTime(position.timestamp)}.`,
+      ].join('\n'),
+    }).catch((err) => console.warn('[CheckIn] Không ghi được dấu vết vị trí:', err));
+  };
+
   // Check-in: chỉ cho xác nhận "Đã đến nơi" khi GPS của KTV nằm trong bán kính quanh địa chỉ khách.
+  // Lưu ý: /arrive không nhận body nên toạ độ chỉ dùng để kiểm tra phía app.
   const handleArrive = async () => {
-    const targetLat = Number(job?.lat);
-    const targetLng = Number(job?.lng);
-    if (!targetLat || !targetLng) {
-      arriveMutation.mutate();
-      return;
-    }
+    if (!acquireActionLock()) return;
+    // true khi khoá đã được giao cho arriveMutation (onSettled mở) hoặc cho Alert xác nhận
+    let lockHandedOff = false;
     setCheckingLocation(true);
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -453,9 +525,61 @@ export default function WorkerJobDetailScreen() {
         );
         return;
       }
-      const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
+
+      let position: Location.LocationObject;
+      try {
+        position = await withTimeout(
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High }),
+          CHECK_IN_LOCATION_TIMEOUT_MS
+        );
+      } catch {
+        Alert.alert('Không lấy được vị trí', 'Không lấy được vị trí, hãy ra chỗ thoáng và thử lại.');
+        return;
+      }
+
+      if (position.mocked === true) {
+        Alert.alert(
+          'Vị trí không hợp lệ',
+          'Phát hiện vị trí giả lập. Vui lòng tắt ứng dụng giả lập vị trí.'
+        );
+        return;
+      }
+
+      const accuracy = position.coords.accuracy;
+      if (accuracy != null && accuracy > CHECK_IN_MAX_ACCURACY_METERS) {
+        Alert.alert(
+          'GPS chưa chính xác',
+          `Tín hiệu GPS chưa đủ chính xác (±${Math.round(accuracy)} m). Vui lòng thử lại ở chỗ thoáng.`
+        );
+        return;
+      }
+
+      const targetLat = Number(job?.lat);
+      const targetLng = Number(job?.lng);
+      const hasTarget =
+        Number.isFinite(targetLat) && Number.isFinite(targetLng) && targetLat !== 0 && targetLng !== 0;
+
+      if (!hasTarget) {
+        // Backend chưa hỗ trợ đơn thiếu toạ độ: vẫn cho đến nơi nhưng xác nhận và lưu dấu vết.
+        lockHandedOff = true;
+        Alert.alert(
+          'Xác nhận đã đến nơi',
+          'Đơn này không có toạ độ, TAYZEN sẽ ghi nhận vị trí của bạn.',
+          [
+            { text: 'Huỷ', style: 'cancel', onPress: releaseActionLock },
+            {
+              text: 'Xác nhận',
+              onPress: () =>
+                arriveMutation.mutate(undefined, {
+                  onSuccess: () => logArrivalWithoutTarget(position),
+                }),
+            },
+          ],
+          { cancelable: true, onDismiss: releaseActionLock }
+        );
+        return;
+      }
+
       const distance = distanceInMeters(
         position.coords.latitude,
         position.coords.longitude,
@@ -469,11 +593,13 @@ export default function WorkerJobDetailScreen() {
         );
         return;
       }
+      lockHandedOff = true;
       arriveMutation.mutate();
     } catch {
       Alert.alert('Không lấy được vị trí', 'Vui lòng bật GPS và thử lại.');
     } finally {
       setCheckingLocation(false);
+      if (!lockHandedOff) releaseActionLock();
     }
   };
 
@@ -934,7 +1060,7 @@ export default function WorkerJobDetailScreen() {
             </Pressable>
             <Pressable
               style={styles.acceptBtn}
-              onPress={() => acceptMutation.mutate()}
+              onPress={() => runLocked(() => acceptMutation.mutate())}
               disabled={acceptMutation.isPending}>
               {acceptMutation.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />
@@ -948,7 +1074,7 @@ export default function WorkerJobDetailScreen() {
         {job.status === BookingStatus.Confirmed && (
           <Pressable
             style={styles.primaryActionBtn}
-            onPress={() => travelMutation.mutate()}
+            onPress={() => runLocked(() => travelMutation.mutate())}
             disabled={travelMutation.isPending}>
             {travelMutation.isPending ? (
               <ActivityIndicator size="small" color="#ffffff" />
@@ -974,7 +1100,7 @@ export default function WorkerJobDetailScreen() {
         {job.status === BookingStatus.Arrived && (
           <Pressable
             style={styles.primaryActionBtn}
-            onPress={() => startWorkMutation.mutate()}
+            onPress={() => runLocked(() => startWorkMutation.mutate())}
             disabled={startWorkMutation.isPending}>
             {startWorkMutation.isPending ? (
               <ActivityIndicator size="small" color="#ffffff" />
@@ -1133,7 +1259,7 @@ export default function WorkerJobDetailScreen() {
                 styles.modalSubmitBtn,
                 completeMutation.isPending && styles.modalSubmitBtnDisabled,
               ]}
-              onPress={() => completeMutation.mutate()}
+              onPress={() => runLocked(() => completeMutation.mutate())}
               disabled={completeMutation.isPending}>
               {completeMutation.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />

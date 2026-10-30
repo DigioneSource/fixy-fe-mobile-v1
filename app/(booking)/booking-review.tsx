@@ -2,6 +2,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import * as StoreReview from 'expo-store-review';
 import * as React from 'react';
 import {
   ActivityIndicator,
@@ -21,6 +23,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { submitReview } from '@/services/api/reviews';
 import { getApiErrorMessage } from '@/services/api/client';
 import { prepareUploadFile } from '@/services/api/media';
+
+const STORE_REVIEW_LAST_ASKED_KEY = 'tayzen_store_review_last_asked_at';
+const STORE_REVIEW_INTERVAL_MS = 90 * 24 * 60 * 60 * 1000;
+
+// Mời khách chấm điểm trên App Store / Google Play sau đánh giá 5 sao, tối đa 1 lần mỗi 90 ngày.
+async function maybeRequestStoreReview() {
+  try {
+    const lastAskedAt = Number(await SecureStore.getItemAsync(STORE_REVIEW_LAST_ASKED_KEY));
+    if (lastAskedAt && Date.now() - lastAskedAt < STORE_REVIEW_INTERVAL_MS) return;
+    if (!(await StoreReview.hasAction())) return;
+    await SecureStore.setItemAsync(STORE_REVIEW_LAST_ASKED_KEY, String(Date.now()));
+    await StoreReview.requestReview();
+  } catch {
+    // Không chặn luồng đánh giá nếu store review hoặc SecureStore không khả dụng.
+  }
+}
 
 const SUGGESTION_CHIPS = [
   'Đúng giờ',
@@ -117,6 +135,7 @@ export default function BookingReviewScreen() {
         {
           text: 'OK',
           onPress: () => {
+            if (rating === 5) void maybeRequestStoreReview();
             if (router.canGoBack()) {
               router.back();
             } else {

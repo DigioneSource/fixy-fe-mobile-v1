@@ -54,10 +54,10 @@ export default function WelcomeScreen() {
 
           {/* Copy Spa Text */}
           <View style={styles.copy}>
-            <Text style={[styles.headline, styles.darkText]}>Chăm sóc sắc đẹp</Text>
-            <Text style={[styles.headline, styles.goldText]}>Trải nghiệm tại nhà</Text>
+            <Text style={[styles.headline, styles.darkText]}>Đôi tay làm bạn thư thái</Text>
+            <Text style={[styles.headline, styles.goldText]}>Ngay tại nhà bạn</Text>
             <Text style={styles.subtitle}>
-              Đặt dịch vụ Spa, Massage & Skincare thư giãn chuyên nghiệp tận nơi nhanh chóng, uy tín.
+              Đặt KTV spa đã xác minh đến tận nhà. Giá niêm yết, có nút SOS.
             </Text>
           </View>
 
@@ -99,9 +99,12 @@ export default function WelcomeScreen() {
           </Pressable>
 
           <View style={styles.footerRow}>
-            <Text style={styles.footerText}>Bạn là kĩ thuật viên Spa? </Text>
-            <Pressable onPress={() => router.push('/register' as any)}>
-              <Text style={styles.footerLink}>Đăng ký làm kĩ thuật viên</Text>
+            <Text style={styles.footerText}>Bạn là kỹ thuật viên Spa? </Text>
+            <Pressable
+              onPress={() =>
+                router.push({ pathname: '/register' as any, params: { role: 'worker' } })
+              }>
+              <Text style={styles.footerLink}>Đăng ký làm kỹ thuật viên</Text>
             </Pressable>
           </View>
         </View>

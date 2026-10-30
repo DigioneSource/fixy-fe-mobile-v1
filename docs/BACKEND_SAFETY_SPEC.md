@@ -71,3 +71,44 @@ App gọi `DELETE /api/user` (đã có trong Swagger). Backend cần bảo đả
 - **Backend cần bảo đảm:** ghép đơn tự động (`autoMatch`) chỉ gửi đơn cho KTV có lịch làm việc phủ
   `scheduledAt` (hoặc thời điểm hiện tại với đơn đặt ngay) và không trùng đơn khác, đồng thời
   `confirmDraft` kiểm tra lại lịch rảnh phía máy chủ.
+
+## Rà soát toàn đội 30/10/2026 — việc backend (đọc từ Swagger, chưa thấy mã backend)
+
+Các mục dưới là **suy luận từ thiết kế API**; đội BE xác nhận từng mục rồi đánh dấu đã có / đã sửa.
+
+### P0
+1. **Đặt lại mật khẩu không gắn OTP.** `ResetPasswordRequestDto` chỉ có `{target, newPassword}`.
+   `/auth/otp/verify` phải trả `resetToken` dùng một lần (5–10 phút); `/reset-password` và `/register`
+   bắt buộc token này. Đổi mật khẩu xong thu hồi mọi refresh token. (App sẽ gửi token khi BE có.)
+2. **Điểm khớp khuôn mặt do app gửi.** `/worker-profiles/register` và `me/identification-images` nhận
+   `FaceMatchScore` từ client. Bỏ qua giá trị này; máy chủ tự gọi FPT so CCCD–selfie, admin chỉ duyệt khi
+   điểm do máy chủ tính đạt ngưỡng.
+3. **Webhook thanh toán.** Kiểm chữ ký từng cổng (VNPay `vnp_SecureHash`, PayOS checksum, MoMo
+   `signature`, SePay `Apikey` + IP whitelist), đối chiếu `amount`, UNIQUE theo mã giao dịch cổng.
+   Tách IPN (ghi tiền) khỏi return URL (chỉ đọc). Hiện app vẫn gọi `GET /payment/callback/vnpay` sau khi
+   VNPay chuyển hướng, rồi tự hỏi lại trạng thái đơn — endpoint này phải idempotent.
+4. **`POST /api/seed/spa-data` đang có trên production**, Swagger mở công khai. Chỉ bật ở Development.
+
+### P1
+5. **IDOR**: kiểm tra chủ sở hữu ở `/worker-schedules/{workerProfileId}/*`, `/worker-profiles/{id}/private`,
+   `/Media/{id}` (ảnh CCCD), `/bookings/{id}/tracking|chat/messages`, `GET /bookings?CustomerProfileId=`,
+   `GET /api/user`. Viết test chéo tài khoản A gọi tài nguyên của B.
+6. **Tiền chạy đồng thời**: `POST /payouts` (số tiền ≤ số dư khả dụng trừ lệnh đang chờ),
+   `/wallet/booking/{id}/wallet`, `/vouchers/apply` (`UPDATE … WHERE used < limit` + UNIQUE),
+   `Idempotency-Key`. Giá `/propose` phải nằm trong khung min–max của dịch vụ.
+7. **Đăng xuất**: thêm `POST /auth/logout` thu hồi refresh token; xoay vòng refresh token; access token ≤ 15 phút.
+8. **Dữ liệu trả thừa**: trước khi KTV nhận đơn chỉ trả phường/quận + khoảng cách; từ Confirmed mới trả địa
+   chỉ đầy đủ và SĐT; ẩn lại 24 giờ sau Completed. `/tracking` chỉ trả vị trí KTV khi trạng thái 4–6.
+9. **Giới hạn tần suất**: gửi OTP 3 lần/15 phút/target+IP, sai OTP 5 lần khoá mã, đăng nhập sai 10 lần/giờ → 429.
+10. **`acceptedTerms`**: app đã gửi `{acceptedTerms: true}` khi `confirm` nháp — BE bắt buộc `true` và lưu thời điểm.
+11. **Che số điện thoại**: hiện khách và KTV thấy số của nhau. Cần tổng đài số ẩn hoặc chỉ gọi trong
+    khoảng từ khi nhận đơn tới 2 giờ sau khi xong (chờ CEO quyết chi phí).
+12. **Check-in GPS phía máy chủ**: `/arrive` chưa nhận toạ độ. Thêm body `{lat, lng, accuracy, mocked}`
+    và từ chối khi xa hơn 500 m — app sẽ gửi khi BE có.
+13. **Thông báo đẩy**: app chưa đăng ký `POST /Notification/fcm-token`; cần thống nhất Expo push hay FCM thuần.
+
+### Pháp lý ảnh hưởng backend
+- **Thuế NĐ 117/2025**: nền tảng có chức năng thanh toán phải khấu trừ, nộp thay GTGT 5% + TNCN 2% trên
+  doanh thu dịch vụ của KTV. Ví KTV cần tách: doanh thu, phí nền tảng, thuế đã khấu trừ.
+- **Hoa hồng**: Swagger không có trường phí nền tảng nào. CEO chốt %, BE trả `platformFee`, `workerNet` mỗi đơn.
+- **Lưu đồng ý**: lưu phiên bản điều khoản + thời điểm đồng ý (Luật 91/2025/QH15, NĐ 356/2025).

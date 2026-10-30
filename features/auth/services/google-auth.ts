@@ -64,7 +64,7 @@ export async function promptGoogleSignIn(): Promise<string | null> {
       if (idToken) {
         return idToken;
       }
-      console.warn('[GoogleAuth] Google Sign-In completed but no idToken returned:', response);
+      console.warn('[GoogleAuth] Google Sign-In completed but no idToken returned');
     } catch (error: any) {
       if (error?.code === statusCodes?.SIGN_IN_CANCELLED) {
         // User cancelled the sign in flow
@@ -130,4 +130,14 @@ export async function promptGoogleSignIn(): Promise<string | null> {
     'Tính năng đăng nhập Google trên Android yêu cầu bản EAS Build (Development Client hoặc Standalone Preview) chứa Native Module.'
   );
   return null;
+}
+
+/** Đăng xuất khỏi Google để lần sau người khác dùng máy phải chọn lại tài khoản. */
+export async function signOutGoogle() {
+  if (!GoogleSignin) return;
+  try {
+    await GoogleSignin.signOut();
+  } catch {
+    // Chưa đăng nhập Google hoặc module chưa cấu hình — bỏ qua.
+  }
 }
