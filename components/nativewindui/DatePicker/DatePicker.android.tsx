@@ -38,7 +38,7 @@ export function DatePicker(
             onPress={show('date')}
             className="border-foreground/30 rounded border px-2.5 py-3 active:opacity-80">
             <Text className="py-px text-sm">
-              {new Intl.DateTimeFormat('en-US', {
+              {new Intl.DateTimeFormat('vi-VN', {
                 dateStyle: 'medium',
               }).format(props.value)}
             </Text>
@@ -59,7 +59,7 @@ export function DatePicker(
             onPress={show('time')}
             className="border-foreground/30 rounded border px-2.5 py-3 active:opacity-80">
             <Text className="py-px text-sm">
-              {new Intl.DateTimeFormat('en-US', {
+              {new Intl.DateTimeFormat('vi-VN', {
                 timeStyle: 'short',
               }).format(props.value)}
             </Text>

@@ -368,6 +368,28 @@ export async function getBookingDetails(bookingId: string): Promise<Booking> {
   return normalizeBooking(data);
 }
 
+export type BookingPaymentCheck = 'paid' | 'pending' | 'cancelled';
+
+/** Hỏi lại backend sau khi cổng thanh toán chuyển hướng về — không tin vào URL trả về. */
+export async function waitForBookingPaid(
+  bookingId: string,
+  attempts = 6,
+  intervalMs = 2000
+): Promise<BookingPaymentCheck> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      const booking = await getBookingDetails(bookingId);
+      const status = Number(booking.status);
+      if (status === BookingStatus.Cancelled) return 'cancelled';
+      if (status !== BookingStatus.PendingPayment) return 'paid';
+    } catch {
+      // Lỗi mạng tạm thời: thử lại ở lượt sau
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return 'pending';
+}
+
 export async function getMyBookings(params?: Record<string, unknown>): Promise<Booking[]> {
   try {
     const response = await apiClient.get(`${BOOKING_PATH}/customer`, { params });

@@ -11,10 +11,13 @@ import {
   payBookingWithWallet,
   PaymentMethod,
   PAYMENT_METHOD_LABELS,
+  BookingScheduledType,
   startBookingPayment,
+  waitForBookingPaid,
 } from '@/services/api/bookings';
 import { fetchCategories } from '@/services/api/categories';
-import { getWorkerDetails, WorkerProfile } from '@/services/api/workers';
+import { checkAvailability, getWorkerDetails, WorkerProfile } from '@/services/api/workers';
+import { DatePicker } from '@/components/nativewindui/DatePicker';
 import { getWalletOverview, WalletOverview } from '@/services/api/wallet';
 import { applyVoucher, getEligibleVouchers } from '@/services/api/vouchers';
 import { EligibleVoucher, formatVoucherIneligibleReason, getVoucherDiscount } from '@/services/api/voucher-utils';
@@ -83,6 +86,9 @@ export default function BookingCheckoutScreen() {
   const [showVnpayWebView, setShowVnpayWebView] = React.useState(false);
   const [vnpayUrl, setVnpayUrl] = React.useState('');
   const [confirmedBookingId, setConfirmedBookingId] = React.useState<string | null>(null);
+  const [verifyingPayment, setVerifyingPayment] = React.useState(false);
+  const [scheduleMode, setScheduleMode] = React.useState<'now' | 'later'>('now');
+  const [scheduledAt, setScheduledAt] = React.useState<Date>(defaultScheduledAt);
   const [acceptedCommitments, setAcceptedCommitments] = React.useState(false);
   const [genderPreference, setGenderPreference] = React.useState<WorkerGenderPreference>(
     WorkerGenderPreference.Any
@@ -205,10 +211,30 @@ export default function BookingCheckoutScreen() {
     !activeWorkerProfileId &&
     genderPreference !== WorkerGenderPreference.Any;
 
+  const isScheduled = scheduleMode === 'later';
+  const scheduleFields = isScheduled
+    ? { scheduledType: BookingScheduledType.Scheduled, scheduledAt: scheduledAt.toISOString() }
+    : { scheduledType: BookingScheduledType.Now };
+
   // Confirm booking & pay mutation (creates draft if needed, confirms, applies voucher, then pays)
   const confirmMutation = useMutation({
     mutationFn: async () => {
       let targetDraftId = activeDraftId;
+
+      if (isScheduled) {
+        const minTime = Date.now() + MIN_SCHEDULE_LEAD_MINUTES * 60 * 1000;
+        if (scheduledAt.getTime() < minTime) {
+          throw new Error(
+            `Vui lòng hẹn trước ít nhất ${MIN_SCHEDULE_LEAD_MINUTES} phút so với hiện tại.`
+          );
+        }
+        if (
+          activeWorkerProfileId &&
+          !(await checkAvailability(activeWorkerProfileId, scheduledAt.toISOString()))
+        ) {
+          throw new Error('Kỹ thuật viên không rảnh vào giờ này. Vui lòng chọn giờ khác.');
+        }
+      }
 
       if (!targetDraftId) {
         if (!selectedAddress) {
@@ -224,7 +250,7 @@ export default function BookingCheckoutScreen() {
           address: addressText,
           lat: selectedAddress.lat ?? 0,
           lng: selectedAddress.lng ?? 0,
-          scheduledType: 0,
+          ...scheduleFields,
           totalDurationMinutes: durationNum,
           workerProfileId: activeWorkerProfileId || null,
           autoMatch: !activeWorkerProfileId,
@@ -232,18 +258,19 @@ export default function BookingCheckoutScreen() {
         });
 
         targetDraftId = createdDraft.id || createdDraft.draftId || null;
-      } else if (wantsGenderPreference && selectedAddress) {
+      } else if ((wantsGenderPreference || isScheduled) && selectedAddress) {
+        // Đơn nháp tạo sẵn (để lấy voucher) luôn là "đặt ngay" — cập nhật lựa chọn cuối của khách.
         await updateDraft(targetDraftId, {
           categoryId: category?.id || activeCategoryId || categories[0]?.id || '',
           addressId: selectedAddress.id,
           address: formatFullAddress(selectedAddress),
           lat: selectedAddress.lat ?? 0,
           lng: selectedAddress.lng ?? 0,
-          scheduledType: 0,
+          ...scheduleFields,
           totalDurationMinutes: durationNum,
-          workerProfileId: null,
-          autoMatch: true,
-          preferredWorkerGender: genderPreference,
+          workerProfileId: activeWorkerProfileId || null,
+          autoMatch: !activeWorkerProfileId,
+          preferredWorkerGender: wantsGenderPreference ? genderPreference : undefined,
         });
       }
 
@@ -258,12 +285,14 @@ export default function BookingCheckoutScreen() {
         throw new Error('Không tạo được đơn hàng.');
       }
 
-      // Apply selected voucher to the confirmed booking on Backend
+      // Apply selected voucher to the confirmed booking on Backend.
+      // Lỗi thì DỪNG trước khi thu tiền, tránh khách thấy giảm giá nhưng bị trừ đủ.
       if (selectedVoucher && selectedVoucher.code) {
         try {
           await applyVoucher(selectedVoucher.code, bookingId);
         } catch (vErr) {
-          console.warn('[checkout] Failed to apply voucher to booking on BE:', vErr);
+          setConfirmedBookingId(bookingId);
+          throw new VoucherApplyError(bookingId, getApiErrorMessage(vErr));
         }
       }
 
@@ -322,6 +351,14 @@ export default function BookingCheckoutScreen() {
       }
     },
     onError: (error: any) => {
+      if (error instanceof VoucherApplyError) {
+        Alert.alert(
+          'Chưa áp dụng được voucher',
+          `${error.message}\n\nĐơn đã được tạo nhưng CHƯA thanh toán. Bạn có thể thử lại voucher hoặc thanh toán trong chi tiết đơn.`
+        );
+        router.replace(`/booking-detail?bookingId=${error.bookingId}` as any);
+        return;
+      }
       const msg = getApiErrorMessage(error);
       Alert.alert('Lỗi đặt lịch', msg);
     },
@@ -377,15 +414,26 @@ export default function BookingCheckoutScreen() {
         visible={showPayOSWebView}
         paymentUrl={payosUrl}
         onClose={() => setShowPayOSWebView(false)}
-        onSuccess={(transactionId, params) => {
+        onSuccess={async () => {
           setShowPayOSWebView(false);
-          Alert.alert(
-            'Thanh toán thành công! 🎉',
-            'Đơn dịch vụ của bạn đã được thanh toán thành công qua PayOS.'
-          );
-          if (confirmedBookingId) {
-            router.replace(`/booking-detail?bookingId=${confirmedBookingId}` as any);
+          if (!confirmedBookingId) return;
+          setVerifyingPayment(true);
+          const result = await waitForBookingPaid(confirmedBookingId);
+          setVerifyingPayment(false);
+          if (result === 'paid') {
+            Alert.alert(
+              'Thanh toán thành công! 🎉',
+              'Đơn dịch vụ của bạn đã được thanh toán thành công qua PayOS.'
+            );
+          } else if (result === 'cancelled') {
+            Alert.alert('Đơn đã bị huỷ', 'Giao dịch không được ghi nhận. Vui lòng kiểm tra lại đơn.');
+          } else {
+            Alert.alert(
+              'Đang chờ xác nhận thanh toán',
+              'TAYZEN chưa nhận được xác nhận từ cổng thanh toán. Trạng thái đơn sẽ tự cập nhật trong ít phút; nếu đã bị trừ tiền mà đơn chưa cập nhật, vui lòng liên hệ hỗ trợ.'
+            );
           }
+          router.replace(`/booking-detail?bookingId=${confirmedBookingId}` as any);
         }}
         onError={(error) => {
           setShowPayOSWebView(false);
@@ -395,6 +443,15 @@ export default function BookingCheckoutScreen() {
           }
         }}
       />
+
+      <Modal visible={verifyingPayment} transparent animationType="fade">
+        <View style={styles.verifyingOverlay}>
+          <View style={styles.verifyingBox}>
+            <ActivityIndicator size="large" color="#0F382C" />
+            <Text style={styles.verifyingText}>Đang xác nhận thanh toán…</Text>
+          </View>
+        </View>
+      </Modal>
 
       {/* VNPay WebView Modal */}
       <VNPayWebView
@@ -654,6 +711,57 @@ export default function BookingCheckoutScreen() {
           </View>
         </View>
 
+        <View style={styles.cardContainer}>
+          <Text style={styles.cardSectionLabel}>Thời gian thực hiện</Text>
+          <View style={styles.genderRow}>
+            {(
+              [
+                { value: 'now', label: 'Ngay bây giờ' },
+                { value: 'later', label: 'Hẹn giờ' },
+              ] as const
+            ).map((option) => {
+              const selected = scheduleMode === option.value;
+              return (
+                <Pressable
+                  key={option.value}
+                  style={[styles.genderChip, selected && styles.genderChipSelected]}
+                  onPress={() => {
+                    if (option.value === 'later' && scheduledAt.getTime() < Date.now()) {
+                      setScheduledAt(defaultScheduledAt());
+                    }
+                    setScheduleMode(option.value);
+                  }}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected }}>
+                  <Text style={[styles.genderChipText, selected && styles.genderChipTextSelected]}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {isScheduled && (
+            <View style={styles.schedulePicker}>
+              <DatePicker
+                mode="datetime"
+                value={scheduledAt}
+                locale="vi-VN"
+                minimumDate={new Date(Date.now() + MIN_SCHEDULE_LEAD_MINUTES * 60 * 1000)}
+                maximumDate={new Date(Date.now() + MAX_SCHEDULE_DAYS * 24 * 60 * 60 * 1000)}
+                minuteInterval={15}
+                materialDateLabel="Ngày"
+                materialTimeLabel="Giờ"
+                onChange={(_event, date) => {
+                  if (date) setScheduledAt(date);
+                }}
+              />
+              <Text style={styles.scheduleHint}>
+                {`KTV sẽ đến vào ${formatScheduleLabel(scheduledAt)}. Hẹn trước tối thiểu ${MIN_SCHEDULE_LEAD_MINUTES} phút, tối đa ${MAX_SCHEDULE_DAYS} ngày.`}
+              </Text>
+            </View>
+          )}
+        </View>
+
         {FEATURE_WORKER_GENDER_PREFERENCE && !activeWorkerProfileId && (
           <View style={styles.cardContainer}>
             <Text style={styles.cardSectionLabel}>Ưu tiên kỹ thuật viên</Text>
@@ -893,7 +1001,63 @@ export default function BookingCheckoutScreen() {
   );
 }
 
+const MIN_SCHEDULE_LEAD_MINUTES = 60;
+const MAX_SCHEDULE_DAYS = 14;
+
+// Mặc định: 2 giờ nữa, làm tròn lên mốc 15 phút
+function defaultScheduledAt() {
+  const date = new Date(Date.now() + 2 * 60 * 60 * 1000);
+  date.setSeconds(0, 0);
+  date.setMinutes(Math.ceil(date.getMinutes() / 15) * 15);
+  return date;
+}
+
+function formatScheduleLabel(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${pad(date.getHours())}:${pad(date.getMinutes())} ngày ${pad(date.getDate())}/${pad(
+    date.getMonth() + 1
+  )}/${date.getFullYear()}`;
+}
+
+class VoucherApplyError extends Error {
+  constructor(
+    public bookingId: string,
+    message: string
+  ) {
+    super(message);
+  }
+}
+
 const styles = StyleSheet.create({
+  schedulePicker: {
+    gap: 8,
+    marginTop: 12,
+  },
+  scheduleHint: {
+    color: '#475467',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  verifyingOverlay: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  verifyingBox: {
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 24,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+  },
+  verifyingText: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 15,
+  },
   screen: {
     flex: 1,
     backgroundColor: '#FBF9F5',
