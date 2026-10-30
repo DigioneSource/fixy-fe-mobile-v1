@@ -44,6 +44,7 @@ import {
 } from '@/services/api/workers';
 import { getApiErrorMessage } from '@/services/api/client';
 import { FptIdentityRecognitionResult, recognizeIdentityImage } from '@/services/api/fpt';
+import { DeleteAccountModal } from '@/components/account/delete-account-modal';
 import {
   dateToApiTime,
   dateToDateOnly,
@@ -235,6 +236,7 @@ export default function WorkerProfileScreen() {
   const [editBio, setEditBio] = React.useState('');
   const [editPhone, setEditPhone] = React.useState('');
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   React.useEffect(() => {
@@ -1053,10 +1055,19 @@ export default function WorkerProfileScreen() {
             <MaterialIcons name="logout" size={20} color="#ba1a1a" />
             <Text className="font-montserrat-semibold text-sm text-[#ba1a1a]">Đăng xuất</Text>
           </Pressable>
+          <Pressable className="mt-4 min-h-[44px] justify-center px-4" onPress={() => setDeleteAccountOpen(true)}>
+            <Text className="font-montserrat text-sm text-[#818A91] underline">Xoá tài khoản</Text>
+          </Pressable>
         </View>
       </KeyboardAwareScrollView>
 
       <WorkerTabBar activeTab="profile" />
+
+      <DeleteAccountModal
+        visible={deleteAccountOpen}
+        onClose={() => setDeleteAccountOpen(false)}
+        role="worker"
+      />
 
       <Modal visible={logoutConfirmOpen} transparent animationType="fade">
         <View className="flex-1 bg-black/50 justify-center items-center px-5">

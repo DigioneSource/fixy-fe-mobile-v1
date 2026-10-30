@@ -487,6 +487,7 @@ export default function WorkerSetupScreen() {
       Alert.alert('Nhận diện hoàn tất', 'Thông tin CCCD đã được tự động điền.');
     } catch (err) {
       console.warn('Scan slot failed:', err);
+      Alert.alert('Chưa nhận diện được CCCD', 'Vui lòng nhập thông tin CCCD thủ công.');
     } finally {
       setScanningCccd(false);
     }

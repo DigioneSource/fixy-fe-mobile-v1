@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-import { getFptAiApiKey, getFptProxyBaseUrl } from '@/config/env';
+import { getFptProxyBaseUrl } from '@/config/env';
+import { apiClient } from './client';
 import { prepareUploadFile } from './media';
+
+// Khoá FPT AI chỉ nằm ở máy chủ. App KHÔNG được gọi thẳng api.fpt.ai (khoá đóng gói trong app ai cũng lấy được).
+const IDENTITY_RECOGNITION_PATH = '/worker-profiles/identity-recognition';
 
 export type FptIdentityRecognitionResult = {
   type: string;
@@ -98,19 +102,17 @@ export async function recognizeIdentityImage(
   if (fileObj) {
     formData.append('image', fileObj);
   }
-  const fptApiKey = getFptAiApiKey();
+  const proxyBaseUrl = getFptProxyBaseUrl();
 
-  const response = fptApiKey
-    ? await axios.post('https://api.fpt.ai/vision/idr/vnm', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'api-key': fptApiKey,
-        },
-        transformRequest: (data) => data,
-      })
-    : await axios.post(`${getFptProxyBaseUrl()}/api/fpt/identity-recognition`, formData, {
+  const response = proxyBaseUrl
+    ? await axios.post(`${proxyBaseUrl}/api/fpt/identity-recognition`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         transformRequest: (data) => data,
+      })
+    : await apiClient.post(IDENTITY_RECOGNITION_PATH, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        transformRequest: (data) => data,
+        timeout: 60000,
       });
 
   return normalizeRecognition(response.data);

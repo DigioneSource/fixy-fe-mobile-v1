@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getUserProfile, UserProfile } from '@/services/api/user';
 import { Address, getMyAddresses } from '@/services/api/addresses';
 import { useAuthStore } from '@/store/store';
+import { DeleteAccountModal } from '@/components/account/delete-account-modal';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -29,6 +30,7 @@ export default function ProfileScreen() {
   const [addresses, setAddresses] = React.useState<Address[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = React.useState(false);
+  const [deleteAccountOpen, setDeleteAccountOpen] = React.useState(false);
   const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const [selectedLanguage, setSelectedLanguage] = React.useState('Tiếng Việt');
 
@@ -261,9 +263,25 @@ export default function ProfileScreen() {
               </View>
               <MaterialIcons name="chevron-right" size={22} color="#818A91" />
             </Pressable>
+
+            <View style={styles.menuDivider} />
+
+            <Pressable style={styles.menuItemRow} onPress={() => setDeleteAccountOpen(true)}>
+              <View style={styles.menuLeft}>
+                <MaterialIcons name="delete-forever" size={22} color="#818A91" />
+                <Text style={[styles.menuItemText, { color: '#818A91' }]}>Xoá tài khoản</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={22} color="#818A91" />
+            </Pressable>
           </View>
         </ScrollView>
       )}
+
+      <DeleteAccountModal
+        visible={deleteAccountOpen}
+        onClose={() => setDeleteAccountOpen(false)}
+        role="customer"
+      />
 
       {/* Logout Confirmation Modal */}
       <Modal visible={logoutConfirmOpen} transparent animationType="fade">

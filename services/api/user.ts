@@ -41,3 +41,8 @@ export async function updateUserProfile(data: {
   });
   return response.data;
 }
+
+/** DELETE /user — Xoá vĩnh viễn tài khoản đang đăng nhập (yêu cầu của App Store / Google Play) */
+export async function deleteMyAccount(): Promise<void> {
+  await apiClient.delete('/user');
+}

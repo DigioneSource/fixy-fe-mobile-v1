@@ -43,3 +43,22 @@ CEO chốt 30/10/2026:
 
 ### 4. Hotline an toàn
 - CEO sẽ mua số sau. Điền số vào `SAFETY_HOTLINE` khi có người trực 24/7. Khi để trống, app ẩn nút gọi hotline.
+
+## Bảo mật: nhận dạng CCCD qua FPT AI (30/10/2026)
+
+App đã bỏ hẳn đường gọi thẳng `api.fpt.ai` bằng khoá đóng gói trong app. Backend cần thêm:
+
+- `POST /api/worker-profiles/identity-recognition` (multipart, field `image`, yêu cầu đăng nhập vai KTV).
+  Backend gọi `https://api.fpt.ai/vision/idr/vnm` bằng khoá lưu ở máy chủ (đang có sẵn cho `verify-face`)
+  và trả nguyên JSON của FPT (`errorCode`, `data[]` gồm `id`, `name`, `dob`, `issue_date`, `issue_loc`...).
+- Giới hạn tần suất (ví dụ 10 lần/giờ/KTV) để không bị lạm dụng tốn tiền.
+- **Đổi khoá FPT AI** nếu từng build app có biến `FPT_AI_API_KEY`: khoá đó coi như đã lộ.
+
+Trước khi có API này, nút quét CCCD sẽ báo "nhập thủ công"; KTV vẫn đăng ký được bằng cách nhập tay.
+
+## Xoá tài khoản (30/10/2026)
+
+App gọi `DELETE /api/user` (đã có trong Swagger). Backend cần bảo đảm:
+- Chặn xoá khi còn đơn đang chạy, và trả thông báo lỗi tiếng Việt để app hiển thị nguyên văn.
+- Xoá hoặc ẩn danh dữ liệu cá nhân (NĐ 13/2023), giữ lại chứng từ giao dịch theo luật kế toán.
+- Thu hồi refresh token của tài khoản.
