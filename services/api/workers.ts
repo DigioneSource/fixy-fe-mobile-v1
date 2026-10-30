@@ -175,7 +175,7 @@ function mapBackendWorkerToProfile(w: any, categoryId?: string): WorkerProfile {
     isBusy: w.isBusy ?? w.IsBusy ?? false,
     isPro: w.experienceYears >= 5 || w.isPro || false,
     specialties: w.services?.map((s: any) => getCategorySlug(s.categoryId)) || w.specialties || [],
-    bio: w.bio || 'Kỹ thuật viên chuyên nghiệp đã được xác thực bởi Fixy.',
+    bio: w.bio || 'Kỹ thuật viên chuyên nghiệp đã được xác thực bởi TAYZEN.',
     status,
     rejectReason: w.rejectReason || w.reject_reason || '',
     address: w.address

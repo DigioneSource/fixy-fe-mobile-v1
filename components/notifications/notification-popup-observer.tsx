@@ -109,7 +109,7 @@ async function ensureNotificationPresentationReady() {
 
   if (Platform.OS === 'android') {
     await setNotificationChannelAsync(POPUP_CHANNEL_ID, {
-      name: 'Fixy notifications',
+      name: 'TAYZEN notifications',
       importance: AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF8228',

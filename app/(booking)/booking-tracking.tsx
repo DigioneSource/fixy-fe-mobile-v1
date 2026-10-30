@@ -10,6 +10,7 @@ import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signal
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { SosButton } from '@/components/safety/sos-button';
 import { BookingStatus, BookingTracking, getBookingTracking } from '@/services/api/bookings';
 import { getDistanceAndDuration, getDirections, GOONG_MAPTILES_API_KEY, GOONG_API_KEY } from '@/services/api/goong';
 import { useAuthStore } from '@/store/store';
@@ -449,11 +450,7 @@ export default function BookingTrackingScreen() {
           <MaterialIcons name="arrow-back" size={24} color="#0F382C" />
         </Pressable>
         <Text style={styles.headerTitle}>Theo dõi đơn hàng</Text>
-        <Pressable
-          style={styles.headerBtn}
-          onPress={() => Alert.alert('Trợ giúp', 'Liên hệ hỗ trợ: 1900-xxxx')}>
-          <MaterialIcons name="help-outline" size={24} color="#0F382C" />
-        </Pressable>
+        <SosButton bookingId={params.bookingId} role="customer" />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

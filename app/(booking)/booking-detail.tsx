@@ -19,6 +19,8 @@ import { SvgCssUri } from 'react-native-svg/css';
 import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signalr';
 
 import VNPayWebView from '@/components/VNPayWebView';
+import { SosButton } from '@/components/safety/sos-button';
+import { CANCELLATION_POLICY, FEATURE_CANCELLATION_FEES } from '@/features/safety/safety-config';
 import {
   Booking,
   BookingStatus,
@@ -434,9 +436,23 @@ export default function BookingDetailScreen() {
   });
 
   const handleCancelBooking = () => {
+    const status = Number(booking?.status);
+    const policyIndex =
+      status >= BookingStatus.Arrived
+        ? 3
+        : status === BookingStatus.Traveling
+          ? 2
+          : status === BookingStatus.Confirmed
+            ? 1
+            : 0;
+    const policyNote = FEATURE_CANCELLATION_FEES
+      ? `\n\nChính sách huỷ – ${CANCELLATION_POLICY[policyIndex].stage}: ${CANCELLATION_POLICY[policyIndex].fee}.`
+      : status >= BookingStatus.Traveling
+        ? '\n\nKTV đang trên đường hoặc đã đến nơi. Vui lòng nhắn tin cho KTV trước khi huỷ.'
+        : '';
     Alert.alert(
       'Hủy đặt lịch',
-      'Vui lòng chọn lý do bạn muốn hủy đơn đặt lịch này:',
+      `Vui lòng chọn lý do bạn muốn hủy đơn đặt lịch này:${policyNote}`,
       [
         { text: 'Thay đổi kế hoạch', onPress: () => cancelMutation.mutate('Thay đổi kế hoạch') },
         { text: 'Tìm được thợ khác', onPress: () => cancelMutation.mutate('Tìm được thợ khác') },
@@ -552,16 +568,22 @@ export default function BookingDetailScreen() {
           </Pressable>
           <Text style={styles.headerTitle}>Chi tiết đặt lịch</Text>
         </View>
-        <Pressable
-          style={{ padding: 8 }}
-          onPress={() =>
-            router.push({
-              pathname: '/(customer)/create-support-ticket',
-              params: { bookingId: booking.id },
-            } as any)
-          }>
-          <MaterialIcons name="help-outline" size={24} color="#0F382C" />
-        </Pressable>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          {Number(booking.status) >= BookingStatus.Traveling &&
+            Number(booking.status) <= BookingStatus.InProgress && (
+              <SosButton bookingId={booking.id} role="customer" variant="icon" />
+            )}
+          <Pressable
+            style={{ padding: 8 }}
+            onPress={() =>
+              router.push({
+                pathname: '/(customer)/create-support-ticket',
+                params: { bookingId: booking.id },
+              } as any)
+            }>
+            <MaterialIcons name="help-outline" size={24} color="#0F382C" />
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

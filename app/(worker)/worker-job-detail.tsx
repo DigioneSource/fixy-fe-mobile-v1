@@ -36,6 +36,9 @@ import {
   getBookingDetails,
   updateWorkerLocation,
 } from '@/services/api/bookings';
+import { ReportCustomerModal } from '@/components/safety/report-customer-modal';
+import { SosButton } from '@/components/safety/sos-button';
+import { CHECK_IN_RADIUS_METERS, distanceInMeters } from '@/features/safety/safety-config';
 import { getMediaUrl, uploadMediaFiles, MediaCategory, MediaOwnerType } from '@/services/api/media';
 import { getApiErrorMessage } from '@/services/api/client';
 import { fetchCategories } from '@/services/api/categories';
@@ -119,6 +122,8 @@ export default function WorkerJobDetailScreen() {
   const [completeModalOpen, setCompleteModalOpen] = React.useState(false);
   const [replyModalOpen, setReplyModalOpen] = React.useState(false);
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
+  const [reportCustomerOpen, setReportCustomerOpen] = React.useState(false);
+  const [checkingLocation, setCheckingLocation] = React.useState(false);
 
   // Form states for decline/proposal
   const [declineReason, setDeclineReason] = React.useState('');
@@ -430,6 +435,48 @@ export default function WorkerJobDetailScreen() {
     });
   };
 
+  // Check-in: chỉ cho xác nhận "Đã đến nơi" khi GPS của KTV nằm trong bán kính quanh địa chỉ khách.
+  const handleArrive = async () => {
+    const targetLat = Number(job?.lat);
+    const targetLng = Number(job?.lng);
+    if (!targetLat || !targetLng) {
+      arriveMutation.mutate();
+      return;
+    }
+    setCheckingLocation(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert(
+          'Cần quyền vị trí',
+          'Vui lòng cho phép TAYZEN truy cập vị trí để xác nhận bạn đã đến đúng địa chỉ khách.'
+        );
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const distance = distanceInMeters(
+        position.coords.latitude,
+        position.coords.longitude,
+        targetLat,
+        targetLng
+      );
+      if (distance > CHECK_IN_RADIUS_METERS) {
+        Alert.alert(
+          'Chưa đến đúng địa chỉ',
+          `Bạn đang cách địa chỉ khách khoảng ${Math.round(distance)} m. Chỉ xác nhận "Đã đến nơi" khi ở trong bán kính ${CHECK_IN_RADIUS_METERS} m.`
+        );
+        return;
+      }
+      arriveMutation.mutate();
+    } catch {
+      Alert.alert('Không lấy được vị trí', 'Vui lòng bật GPS và thử lại.');
+    } finally {
+      setCheckingLocation(false);
+    }
+  };
+
   const handlePickImage = async () => {
     if (completionImages.length >= 5) {
       Alert.alert('Giới hạn', 'Bạn chỉ có thể chọn tối đa 5 hình ảnh.');
@@ -495,6 +542,10 @@ export default function WorkerJobDetailScreen() {
           </Pressable>
           <Text style={styles.headerTitle}>Chi tiết công việc</Text>
         </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          {job.status >= BookingStatus.Traveling && job.status <= BookingStatus.InProgress && (
+            <SosButton bookingId={job.id} role="worker" variant="icon" />
+          )}
         <Pressable
           style={{ padding: 8 }}
           onPress={() =>
@@ -505,6 +556,7 @@ export default function WorkerJobDetailScreen() {
           }>
           <MaterialIcons name="help-outline" size={22} color="#0F382C" />
         </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -863,6 +915,15 @@ export default function WorkerJobDetailScreen() {
 
       {/* Floating Action footer based on Status */}
       <View style={[styles.footerBar, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+        {job.status >= BookingStatus.Traveling && job.status <= BookingStatus.Completed && (
+          <Pressable
+            style={styles.reportCustomerLink}
+            onPress={() => setReportCustomerOpen(true)}
+            accessibilityRole="button">
+            <MaterialIcons name="report" size={16} color="#B42318" />
+            <Text style={styles.reportCustomerText}>Báo cáo khách hàng vi phạm</Text>
+          </Pressable>
+        )}
         {(job.status === BookingStatus.Pending || job.status === BookingStatus.Matching) && (
           <View style={styles.incomingActions}>
             <Pressable style={styles.declineBtn} onPress={() => setDeclineModalOpen(true)}>
@@ -900,9 +961,9 @@ export default function WorkerJobDetailScreen() {
         {job.status === BookingStatus.Traveling && (
           <Pressable
             style={styles.primaryActionBtn}
-            onPress={() => arriveMutation.mutate()}
-            disabled={arriveMutation.isPending}>
-            {arriveMutation.isPending ? (
+            onPress={handleArrive}
+            disabled={arriveMutation.isPending || checkingLocation}>
+            {arriveMutation.isPending || checkingLocation ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <Text style={styles.primaryActionText}>Đã đến nơi</Text>
@@ -938,6 +999,12 @@ export default function WorkerJobDetailScreen() {
           </Pressable>
         )}
       </View>
+
+      <ReportCustomerModal
+        bookingId={job.id}
+        visible={reportCustomerOpen}
+        onClose={() => setReportCustomerOpen(false)}
+      />
 
       {/* Decline Reason Modal */}
       <Modal visible={declineModalOpen} transparent animationType="slide">
@@ -1166,6 +1233,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  reportCustomerLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingBottom: 10,
+  },
+  reportCustomerText: {
+    color: '#B42318',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 13,
+  },
   headerTitle: {
     marginLeft: 6,
     color: '#383838',
@@ -1186,7 +1265,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 110,
+    paddingBottom: 140,
   },
   statusCard: {
     backgroundColor: '#ffffff',

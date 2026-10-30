@@ -5,6 +5,7 @@ import {
   BookingDraft,
   confirmDraft,
   createDraft,
+  updateDraft,
   fetchPaymentMethodsApi,
   getDraftDetails,
   payBookingWithWallet,
@@ -41,6 +42,13 @@ import VNPayWebView from '@/components/VNPayWebView';
 import { verifyVnpayCallback } from '@/services/api/payment';
 import { LawViolationBanner, TermsModal } from '@/components/legal/legal-notice';
 import { BOOKING_COMMITMENTS } from '@/features/legal/legal-content';
+import {
+  CANCELLATION_POLICY,
+  FEATURE_CANCELLATION_FEES,
+  FEATURE_WORKER_GENDER_PREFERENCE,
+  WORKER_GENDER_OPTIONS,
+  WorkerGenderPreference,
+} from '@/features/safety/safety-config';
 
 export default function BookingCheckoutScreen() {
   const insets = useSafeAreaInsets();
@@ -76,6 +84,9 @@ export default function BookingCheckoutScreen() {
   const [vnpayUrl, setVnpayUrl] = React.useState('');
   const [confirmedBookingId, setConfirmedBookingId] = React.useState<string | null>(null);
   const [acceptedCommitments, setAcceptedCommitments] = React.useState(false);
+  const [genderPreference, setGenderPreference] = React.useState<WorkerGenderPreference>(
+    WorkerGenderPreference.Any
+  );
   const [showTerms, setShowTerms] = React.useState(false);
 
   const [createdDraftId, setCreatedDraftId] = React.useState<string | null>(null);
@@ -189,6 +200,11 @@ export default function BookingCheckoutScreen() {
   const finalPrice = Math.max(0, servicePrice - discountAmount);
   const walletInsufficient = walletBalance < finalPrice;
 
+  const wantsGenderPreference =
+    FEATURE_WORKER_GENDER_PREFERENCE &&
+    !activeWorkerProfileId &&
+    genderPreference !== WorkerGenderPreference.Any;
+
   // Confirm booking & pay mutation (creates draft if needed, confirms, applies voucher, then pays)
   const confirmMutation = useMutation({
     mutationFn: async () => {
@@ -212,9 +228,23 @@ export default function BookingCheckoutScreen() {
           totalDurationMinutes: durationNum,
           workerProfileId: activeWorkerProfileId || null,
           autoMatch: !activeWorkerProfileId,
+          preferredWorkerGender: wantsGenderPreference ? genderPreference : undefined,
         });
 
         targetDraftId = createdDraft.id || createdDraft.draftId || null;
+      } else if (wantsGenderPreference && selectedAddress) {
+        await updateDraft(targetDraftId, {
+          categoryId: category?.id || activeCategoryId || categories[0]?.id || '',
+          addressId: selectedAddress.id,
+          address: formatFullAddress(selectedAddress),
+          lat: selectedAddress.lat ?? 0,
+          lng: selectedAddress.lng ?? 0,
+          scheduledType: 0,
+          totalDurationMinutes: durationNum,
+          workerProfileId: null,
+          autoMatch: true,
+          preferredWorkerGender: genderPreference,
+        });
       }
 
       if (!targetDraftId) {
@@ -623,6 +653,41 @@ export default function BookingCheckoutScreen() {
             </View>
           </View>
         </View>
+
+        {FEATURE_WORKER_GENDER_PREFERENCE && !activeWorkerProfileId && (
+          <View style={styles.cardContainer}>
+            <Text style={styles.cardSectionLabel}>Ưu tiên kỹ thuật viên</Text>
+            <View style={styles.genderRow}>
+              {WORKER_GENDER_OPTIONS.map((option) => {
+                const selected = genderPreference === option.value;
+                return (
+                  <Pressable
+                    key={option.value}
+                    style={[styles.genderChip, selected && styles.genderChipSelected]}
+                    onPress={() => setGenderPreference(option.value)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}>
+                    <Text style={[styles.genderChipText, selected && styles.genderChipTextSelected]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {FEATURE_CANCELLATION_FEES && (
+          <View style={styles.cardContainer}>
+            <Text style={styles.cardSectionLabel}>Chính sách huỷ</Text>
+            {CANCELLATION_POLICY.map((item) => (
+              <View key={item.stage} style={styles.policyRow}>
+                <Text style={styles.policyStage}>{item.stage}</Text>
+                <Text style={styles.policyFee}>{item.fee}</Text>
+              </View>
+            ))}
+          </View>
+        )}
 
         {/* Block 6: Cam kết & miễn trừ trách nhiệm */}
         <View style={styles.cardContainer}>
@@ -1149,6 +1214,48 @@ const styles = StyleSheet.create({
   },
   confirmBookingBtnDisabled: {
     opacity: 0.6,
+  },
+  genderRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  genderChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#D0D5DD',
+  },
+  genderChipSelected: {
+    borderColor: '#0F382C',
+    backgroundColor: '#0F382C',
+  },
+  genderChipText: {
+    color: '#344054',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 14,
+  },
+  genderChipTextSelected: {
+    color: '#FFFFFF',
+  },
+  policyRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 6,
+  },
+  policyStage: {
+    flex: 1,
+    color: '#475467',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 13,
+  },
+  policyFee: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 13,
+    textAlign: 'right',
   },
   commitmentRow: {
     flexDirection: 'row',

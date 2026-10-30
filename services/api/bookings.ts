@@ -29,7 +29,7 @@ export enum PaymentMethod {
 }
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  [PaymentMethod.Wallet]: 'Ví Fixy',
+  [PaymentMethod.Wallet]: 'Ví TAYZEN',
   [PaymentMethod.Vnpay]: 'VNPay',
   [PaymentMethod.Momo]: 'MoMo',
   [PaymentMethod.PayOS]: 'PayOS',
@@ -48,6 +48,8 @@ export type BookingDraftInput = {
   totalDurationMinutes?: number;
   workerProfileId?: string | null;
   autoMatch: boolean;
+  // Chưa có trên backend — chỉ gửi khi FEATURE_WORKER_GENDER_PREFERENCE bật.
+  preferredWorkerGender?: number;
 };
 
 export type BookingDraft = BookingDraftInput & {
@@ -288,6 +290,7 @@ function buildDraftPayload(draft: BookingDraftInput) {
     totalDurationMinutes: draft.totalDurationMinutes ?? null,
     workerProfileId: draft.workerProfileId ?? null,
     autoMatch: draft.autoMatch,
+    ...(draft.preferredWorkerGender ? { preferredWorkerGender: draft.preferredWorkerGender } : {}),
   };
 }
 
@@ -637,7 +640,7 @@ export async function fetchPaymentMethodsApi(): Promise<ApiPaymentMethodOption[]
   }
   return [
     { name: 'Cash', value: PaymentMethod.Cash, description: 'Tiền mặt' },
-    { name: 'Wallet', value: PaymentMethod.Wallet, description: 'Ví Fixy' },
+    { name: 'Wallet', value: PaymentMethod.Wallet, description: 'Ví TAYZEN' },
     { name: 'Vnpay', value: PaymentMethod.Vnpay, description: 'VNPay' },
     { name: 'Momo', value: PaymentMethod.Momo, description: 'MoMo' },
     { name: 'PayOS', value: PaymentMethod.PayOS, description: 'PayOS' },
