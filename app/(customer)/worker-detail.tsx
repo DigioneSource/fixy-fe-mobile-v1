@@ -419,13 +419,13 @@ export default function WorkerDetailScreen() {
             <Text style={styles.reviewsCount}>({totalReviewsCount} đánh giá)</Text>
           </View>
 
-          {/* Fixy Trust Box */}
+          {/* TAYZEN Trust Box */}
           <View style={styles.glowCareBox}>
             <View style={styles.glowCareBrand}>
               <View style={styles.glowCheckCircle}>
                 <MaterialIcons name="check" size={16} color="#ffffff" />
               </View>
-              <Text style={styles.glowCareBrandText}>Fixy</Text>
+              <Text style={styles.glowCareBrandText}>TAYZEN</Text>
             </View>
 
             <View style={styles.glowCareCommitments}>
@@ -447,7 +447,7 @@ export default function WorkerDetailScreen() {
               <Text style={styles.bioHeadingTitle}>Giới thiệu bản thân</Text>
             </View>
             <Text style={styles.bioText} numberOfLines={showFullBio ? undefined : 3}>
-              {worker?.bio || 'Kỹ thuật viên chuyên nghiệp đã được xác thực bởi Fixy.'}
+              {worker?.bio || 'Kỹ thuật viên chuyên nghiệp đã được xác thực bởi TAYZEN.'}
             </Text>
 
             {(worker?.bio && worker.bio.length > 50) ? (
@@ -572,7 +572,7 @@ export default function WorkerDetailScreen() {
               {reviewsList.length > 0 ? (
                 reviewsList.map((rev) => {
                   const translated = translatedReviews[rev.id];
-                  const reviewerName = rev.customer?.fullName || 'Khách hàng Fixy';
+                  const reviewerName = rev.customer?.fullName || 'Khách hàng TAYZEN';
                   return (
                     <View key={rev.id} style={styles.reviewItem}>
                       <View style={styles.reviewerHeader}>

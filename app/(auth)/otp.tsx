@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as React from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthScreen } from '@/features/auth/components/auth-screen';
@@ -135,7 +135,12 @@ export default function OtpScreen() {
           <Pressable style={styles.backButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={26} color="#0F382C" />
           </Pressable>
-          <Text style={styles.brand}>Fixy</Text>
+          <Image
+            source={require('@/assets/tayzen-logo.png')}
+            style={styles.brandLogo}
+            resizeMode="contain"
+            accessibilityLabel="TAYZEN"
+          />
         </View>
 
         <View style={styles.hero}>
@@ -224,11 +229,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  brand: {
+  brandLogo: {
     marginLeft: 6,
-    color: '#0F382C',
-    fontFamily: 'Montserrat_700Bold',
-    fontSize: 20,
+    width: 108,
+    height: 24,
   },
   hero: {
     alignItems: 'center',

@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as React from 'react';
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text } from '@/components/nativewindui/Text';
@@ -44,12 +44,13 @@ export default function WelcomeScreen() {
         </View>
 
         <View style={[styles.main, { paddingTop: insets.top + 32 }]}>
-          {/* Logo Spa */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoInner}>
-              <MaterialIcons name="spa" size={56} color="#D4AF37" />
-            </View>
-          </View>
+          {/* Logo TAYZEN */}
+          <Image
+            source={require('@/assets/tayzen-logo.png')}
+            style={styles.brandLogo}
+            resizeMode="contain"
+            accessibilityLabel="TAYZEN"
+          />
 
           {/* Copy Spa Text */}
           <View style={styles.copy}>
@@ -140,28 +141,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
-  logoContainer: {
-    width: 112,
-    height: 112,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 56,
-    backgroundColor: '#0F382C',
-    shadowColor: '#0F382C',
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-    borderWidth: 2.5,
-    borderColor: '#D4AF37',
-  },
-  logoInner: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#164839',
-    alignItems: 'center',
-    justifyContent: 'center',
+  brandLogo: {
+    width: 220,
+    height: 49,
   },
   copy: {
     alignItems: 'center',

@@ -1458,7 +1458,7 @@ export default function WorkerSetupScreen() {
                 </View>
                 <Text style={styles.statusTitle}>Hồ sơ đang chờ duyệt</Text>
                 <Text style={styles.statusDesc}>
-                  Đội ngũ quản trị viên Fixy Spa đang kiểm tra và đối chiếu tài liệu CCCD/Chứng chỉ của
+                  Đội ngũ quản trị viên TAYZEN đang kiểm tra và đối chiếu tài liệu CCCD/Chứng chỉ của
                   bạn. Quá trình này sẽ hoàn tất trong vòng 24 - 48 giờ.
                 </Text>
                 <Pressable

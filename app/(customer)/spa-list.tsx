@@ -215,7 +215,7 @@ export default function SpaListScreen() {
                   {primaryPromo.title}
                 </Text>
                 <Text style={styles.promoSubtext} numberOfLines={1}>
-                  {primaryPromo.description || 'Áp dụng cho khách đặt qua ứng dụng Fixy'}
+                  {primaryPromo.description || 'Áp dụng cho khách đặt qua ứng dụng TAYZEN'}
                 </Text>
               </View>
               <View style={styles.bookNowPill}>

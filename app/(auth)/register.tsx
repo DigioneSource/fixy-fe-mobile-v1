@@ -7,6 +7,7 @@ import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthScreen } from '@/features/auth/components/auth-screen';
 import { AuthTextField } from '@/features/auth/components/auth-text-field';
 import { GoogleIcon } from '@/features/auth/components/google-icon';
+import { LawViolationBanner, TermsModal } from '@/components/legal/legal-notice';
 import {
   CUSTOMER_ROLE_REGISTER,
   REGISTRATION_OTP_PURPOSE,
@@ -61,6 +62,10 @@ export default function RegisterScreen() {
   }
 
   async function googleSignIn() {
+    if (!acceptedTerms) {
+      setErrors((prev) => ({ ...prev, acceptedTerms: 'Bạn cần đồng ý với điều khoản sử dụng.' }));
+      return;
+    }
     const credential = await promptGoogleSignIn();
     if (credential) {
       performGoogleLogin(credential);
@@ -75,7 +80,7 @@ export default function RegisterScreen() {
   const [target, setTarget] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
-  const [acceptedTerms, setAcceptedTerms] = React.useState(true);
+  const [acceptedTerms, setAcceptedTerms] = React.useState(false);
 
   // Verification & Flow States
   const [isOtpSent, setIsOtpSent] = React.useState(false);
@@ -311,7 +316,10 @@ export default function RegisterScreen() {
             }}
             onChangePassword={setPassword}
             onChangeConfirmPassword={setConfirmPassword}
-            onToggleTerms={() => setAcceptedTerms((value) => !value)}
+            onToggleTerms={() => {
+              setAcceptedTerms((value) => !value);
+              setErrors((prev) => ({ ...prev, acceptedTerms: undefined }));
+            }}
             onSendOtp={handleSendOtp}
             onSetDigit={setDigit}
             onSubmit={onSubmit}
@@ -456,9 +464,29 @@ function RegisterForm({
   onGoogleSignIn,
 }: RegisterFormProps) {
   const isWorker = selectedRole === 'worker';
+  const [showTerms, setShowTerms] = React.useState(false);
+
+  const termsAgreement = (
+    <>
+      <Pressable style={styles.termsRow} onPress={onToggleTerms}>
+        <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
+          {acceptedTerms ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+        </View>
+        <Text style={styles.termsText}>
+          Tôi đủ 18 tuổi, đã đọc và đồng ý với{' '}
+          <Text style={styles.linkText} onPress={() => setShowTerms(true)}>
+            Điều khoản sử dụng, miễn trừ trách nhiệm
+          </Text>{' '}
+          và Chính sách bảo mật của TAYZEN.
+        </Text>
+      </Pressable>
+      {errors.acceptedTerms ? <Text style={styles.errorText}>{errors.acceptedTerms}</Text> : null}
+    </>
+  );
 
   return (
     <>
+      <TermsModal visible={showTerms} onClose={() => setShowTerms(false)} />
       {/* Step Indicator */}
       <View style={styles.wizardIndicator}>
         <View style={styles.wizardIndicatorLineContainer}>
@@ -511,7 +539,7 @@ function RegisterForm({
       <Text style={styles.subtitle}>
         {isWorker
           ? 'Tạo tài khoản kỹ thuật viên để bắt đầu nhận việc.'
-          : 'Tham gia Fixy để đặt dịch vụ dễ dàng.'}
+          : 'Tham gia TAYZEN để đặt dịch vụ dễ dàng.'}
       </Text>
 
       <View style={styles.selectedRoleBadge}>
@@ -568,8 +596,11 @@ function RegisterForm({
               <View style={styles.divider} />
             </View>
 
+            <LawViolationBanner detail="TAYZEN chỉ cung cấp dịch vụ chăm sóc sức khoẻ, thư giãn, làm đẹp không nhạy cảm. Tài khoản vi phạm sẽ bị khoá vĩnh viễn và báo cơ quan chức năng." />
+            {termsAgreement}
+
             <Pressable
-              style={styles.googleButton}
+              style={[styles.googleButton, !acceptedTerms && styles.googleButtonDisabled]}
               onPress={onGoogleSignIn}>
               <GoogleIcon size={24} />
               <Text style={styles.googleText}>Đăng ký với Google</Text>
@@ -617,15 +648,8 @@ function RegisterForm({
               error={errors.confirmPassword}
             />
 
-            <Pressable style={styles.termsRow} onPress={onToggleTerms}>
-              <View style={[styles.checkbox, acceptedTerms && styles.checkboxChecked]}>
-                {acceptedTerms ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
-              </View>
-              <Text style={styles.termsText}>
-                Tôi đồng ý với <Text style={styles.linkText}>Điều khoản sử dụng</Text> và Chính sách bảo mật.
-              </Text>
-            </Pressable>
-            {errors.acceptedTerms ? <Text style={styles.errorText}>{errors.acceptedTerms}</Text> : null}
+            <LawViolationBanner />
+            {termsAgreement}
             {apiError ? <Text style={styles.apiError}>{apiError}</Text> : null}
 
             <View style={styles.actions}>
@@ -933,6 +957,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#EFECE6',
     backgroundColor: '#FFFFFF',
+  },
+  googleButtonDisabled: {
+    opacity: 0.5,
   },
   googleText: {
     color: '#1C2526',

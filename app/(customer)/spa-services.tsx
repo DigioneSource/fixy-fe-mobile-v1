@@ -219,7 +219,7 @@ export default function SpaServicesScreen() {
             <View style={styles.bannerBadgeRow}>
               <View style={styles.bannerTagPill}>
                 <MaterialIcons name="verified" size={14} color="#F59E0B" />
-                <Text style={styles.bannerTagPillText}>FIXY VERIFIED SPA</Text>
+                <Text style={styles.bannerTagPillText}>TAYZEN VERIFIED SPA</Text>
               </View>
               <View style={styles.promoRibbon}>
                 <MaterialIcons name="bolt" size={13} color="#FFFFFF" />

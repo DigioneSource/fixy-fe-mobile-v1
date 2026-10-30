@@ -67,7 +67,7 @@ export default function NotificationSettingsScreen() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Loại sự kiện nhận thông báo</Text>
             <Text style={styles.sectionSubtitle}>
-              Chọn các sự kiện bạn muốn nhận cập nhật từ Fixy.
+              Chọn các sự kiện bạn muốn nhận cập nhật từ TAYZEN.
             </Text>
           </View>
 

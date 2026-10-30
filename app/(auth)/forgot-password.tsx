@@ -55,7 +55,7 @@ export default function ForgotPasswordScreen() {
         <View style={styles.hero}>
           <Text style={styles.headline}>Đặt lại mật khẩu</Text>
           <Text style={styles.subtitle}>
-            Nhập email hoặc số điện thoại đã đăng ký. Fixy sẽ gửi hướng dẫn khôi phục tài khoản.
+            Nhập email hoặc số điện thoại đã đăng ký. TAYZEN sẽ gửi hướng dẫn khôi phục tài khoản.
           </Text>
         </View>
 

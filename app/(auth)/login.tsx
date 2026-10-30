@@ -167,7 +167,7 @@ export default function LoginScreen() {
 
         <View style={styles.hero}>
           <Text style={styles.headline}>Chào mừng trở lại</Text>
-          <Text style={styles.subtitle}>Đăng nhập để tiếp tục đặt dịch vụ Fixy.</Text>
+          <Text style={styles.subtitle}>Đăng nhập để tiếp tục đặt dịch vụ TAYZEN.</Text>
         </View>
 
         <View style={styles.form}>

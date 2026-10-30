@@ -39,6 +39,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PayOSWebView from '@/components/PayOSWebView';
 import VNPayWebView from '@/components/VNPayWebView';
 import { verifyVnpayCallback } from '@/services/api/payment';
+import { LawViolationBanner, TermsModal } from '@/components/legal/legal-notice';
+import { BOOKING_COMMITMENTS } from '@/features/legal/legal-content';
 
 export default function BookingCheckoutScreen() {
   const insets = useSafeAreaInsets();
@@ -73,6 +75,8 @@ export default function BookingCheckoutScreen() {
   const [showVnpayWebView, setShowVnpayWebView] = React.useState(false);
   const [vnpayUrl, setVnpayUrl] = React.useState('');
   const [confirmedBookingId, setConfirmedBookingId] = React.useState<string | null>(null);
+  const [acceptedCommitments, setAcceptedCommitments] = React.useState(false);
+  const [showTerms, setShowTerms] = React.useState(false);
 
   const [createdDraftId, setCreatedDraftId] = React.useState<string | null>(null);
   const activeDraftId = paramDraftId || createdDraftId;
@@ -301,6 +305,10 @@ export default function BookingCheckoutScreen() {
         { text: 'Thêm địa chỉ', onPress: () => router.push('/saved-addresses' as any) },
         { text: 'Đóng', style: 'cancel' },
       ]);
+      return;
+    }
+    if (!acceptedCommitments) {
+      Alert.alert('Chưa xác nhận cam kết', 'Vui lòng đọc và tick xác nhận cam kết sử dụng dịch vụ trước khi đặt lịch.');
       return;
     }
     confirmMutation.mutate();
@@ -615,12 +623,45 @@ export default function BookingCheckoutScreen() {
             </View>
           </View>
         </View>
+
+        {/* Block 6: Cam kết & miễn trừ trách nhiệm */}
+        <View style={styles.cardContainer}>
+          <Text style={styles.cardSectionLabel}>Cam kết khi đặt dịch vụ</Text>
+          <LawViolationBanner />
+          {BOOKING_COMMITMENTS.map((item) => (
+            <View key={item} style={styles.commitmentRow}>
+              <MaterialIcons name="check" size={16} color="#0F382C" style={{ marginTop: 2 }} />
+              <Text style={styles.commitmentText}>{item}</Text>
+            </View>
+          ))}
+          <Pressable
+            style={styles.commitmentAgreeRow}
+            onPress={() => setAcceptedCommitments((value) => !value)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: acceptedCommitments }}>
+            <View style={[styles.commitmentCheckbox, acceptedCommitments && styles.commitmentCheckboxChecked]}>
+              {acceptedCommitments ? <MaterialIcons name="check" size={16} color="#FFFFFF" /> : null}
+            </View>
+            <Text style={styles.commitmentAgreeText}>
+              Tôi đã đọc, đồng ý các cam kết trên và{' '}
+              <Text style={styles.commitmentLink} onPress={() => setShowTerms(true)}>
+                Điều khoản sử dụng, miễn trừ trách nhiệm
+              </Text>{' '}
+              của TAYZEN.
+            </Text>
+          </Pressable>
+        </View>
       </ScrollView>
+
+      <TermsModal visible={showTerms} onClose={() => setShowTerms(false)} />
 
       {/* Fixed Bottom CTA Button */}
       <View style={[styles.fixedBottomBar, { paddingBottom: insets.bottom > 0 ? insets.bottom : 14 }]}>
         <Pressable
-          style={[styles.confirmBookingBtn, confirmLoading && styles.confirmBookingBtnDisabled]}
+          style={[
+            styles.confirmBookingBtn,
+            (confirmLoading || !acceptedCommitments) && styles.confirmBookingBtnDisabled,
+          ]}
           onPress={handleConfirm}
           disabled={confirmLoading}>
           {confirmLoading ? (
@@ -1108,6 +1149,53 @@ const styles = StyleSheet.create({
   },
   confirmBookingBtnDisabled: {
     opacity: 0.6,
+  },
+  commitmentRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  commitmentText: {
+    flex: 1,
+    color: '#374151',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  commitmentAgreeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#EFECE6',
+  },
+  commitmentCheckbox: {
+    marginTop: 2,
+    height: 22,
+    width: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: '#9CA3AF',
+    backgroundColor: '#FFFFFF',
+  },
+  commitmentCheckboxChecked: {
+    borderColor: '#0F382C',
+    backgroundColor: '#0F382C',
+  },
+  commitmentAgreeText: {
+    flex: 1,
+    color: '#1C2526',
+    fontFamily: 'Montserrat_500Medium',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  commitmentLink: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_700Bold',
+    textDecorationLine: 'underline',
   },
   confirmBookingBtnText: {
     color: '#ffffff',

@@ -145,7 +145,7 @@ export default function WorkerHomeScreen() {
                 </View>
                 <Text style={styles.bannerTitle}>Hoàn thành thiết lập hồ sơ</Text>
                 <Text style={styles.bannerDesc}>
-                  Chào mừng bạn đến với Fixy! Để bắt đầu nhận các yêu cầu dịch vụ spa và nâng cao thu nhập, vui lòng cập nhật thông tin cá nhân, định danh CCCD và dịch vụ cung cấp.
+                  Chào mừng bạn đến với TAYZEN! Để bắt đầu nhận các yêu cầu dịch vụ spa và nâng cao thu nhập, vui lòng cập nhật thông tin cá nhân, định danh CCCD và dịch vụ cung cấp.
                 </Text>
                 <Pressable
                   style={styles.bannerBtn}

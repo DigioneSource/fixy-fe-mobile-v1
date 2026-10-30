@@ -545,7 +545,7 @@ export default function WorkerJobDetailScreen() {
               )}
             </View>
             <View style={styles.customerDetails}>
-              <Text style={styles.customerName}>{job.customerName || 'Khách hàng Fixy'}</Text>
+              <Text style={styles.customerName}>{job.customerName || 'Khách hàng TAYZEN'}</Text>
               <Text style={styles.customerPhone}>SĐT: {job.customerPhone || 'Chưa cập nhật'}</Text>
             </View>
           </View>
@@ -644,7 +644,7 @@ export default function WorkerJobDetailScreen() {
                 if (typeof method === 'string') {
                   const lower = method.toLowerCase();
                   if (lower.includes('cash') || lower.includes('tien mat')) return 'Tiền mặt';
-                  if (lower.includes('wallet') || lower.includes('vi')) return 'Ví Fixy';
+                  if (lower.includes('wallet') || lower.includes('vi')) return 'Ví TAYZEN';
                   if (lower.includes('vnpay')) return 'VNPay';
                   if (lower.includes('momo')) return 'MoMo';
                   if (lower.includes('payos')) return 'PayOS';
@@ -791,7 +791,7 @@ export default function WorkerJobDetailScreen() {
                   </View>
                   <View style={styles.reviewerInfo}>
                     <Text style={styles.reviewerName}>
-                      {bookingReview.customer?.fullName || 'Khách hàng Fixy'}
+                      {bookingReview.customer?.fullName || 'Khách hàng TAYZEN'}
                     </Text>
                     {bookingReview.createdAt ? (
                       <Text style={styles.reviewDateText}>

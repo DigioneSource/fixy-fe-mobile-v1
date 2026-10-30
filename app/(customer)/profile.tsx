@@ -141,7 +141,7 @@ export default function ProfileScreen() {
                 <MaterialIcons name="handshake" size={22} color="#0F382C" />
               </View>
               <Text style={styles.actionCardTitle}>Trở thành</Text>
-              <Text style={styles.actionCardSub}>Đối tác Fixy</Text>
+              <Text style={styles.actionCardSub}>Đối tác TAYZEN</Text>
             </Pressable>
 
             <Pressable
@@ -232,7 +232,7 @@ export default function ProfileScreen() {
 
             <Pressable
               style={styles.menuItemRow}
-              onPress={() => Alert.alert('Về Fixy', 'FIXY – SPA TẠI NHÀ\nNền tảng kết nối Kỹ thuật viên Spa & Khách hàng.\nPhiên bản 1.0 (2026)')}>
+              onPress={() => Alert.alert('Về TAYZEN', 'TAYZEN – Đôi tay làm bạn thư thái\nNền tảng kết nối Kỹ thuật viên Spa & Khách hàng.\nPhiên bản 1.0 (2026)')}>
               <View style={styles.menuLeft}>
                 <MaterialIcons name="info-outline" size={22} color="#0F382C" />
                 <Text style={styles.menuItemText}>Về chúng tôi</Text>

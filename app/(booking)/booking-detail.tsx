@@ -422,7 +422,7 @@ export default function BookingDetailScreen() {
           queryClient.setQueryData(['booking', bookingId], updatedBooking);
         }
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
-        Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng Fixy!');
+        Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng TAYZEN!');
       }
     },
     onError: (error) => {
@@ -476,7 +476,7 @@ export default function BookingDetailScreen() {
       }
       queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
-      Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng Fixy!');
+      Alert.alert('Thành công', 'Thanh toán hóa đơn hoàn tất. Cảm ơn bạn đã sử dụng TAYZEN!');
     } catch (error) {
       queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
       const message =
@@ -784,7 +784,7 @@ export default function BookingDetailScreen() {
                 if (typeof method === 'string') {
                   const lower = method.toLowerCase();
                   if (lower.includes('cash') || lower.includes('tien mat')) return 'Tiền mặt';
-                  if (lower.includes('wallet') || lower.includes('vi')) return 'Ví Fixy';
+                  if (lower.includes('wallet') || lower.includes('vi')) return 'Ví TAYZEN';
                   if (lower.includes('vnpay')) return 'VNPay';
                   if (lower.includes('momo')) return 'MoMo';
                   if (lower.includes('payos')) return 'PayOS';
