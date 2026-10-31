@@ -746,8 +746,11 @@ export default function WorkerSetupScreen() {
       Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất 1 dịch vụ chuyên môn của bạn.');
       return;
     }
-    if (servicesList.some((svc) => svc.options.some((o) => !o.price || o.price <= 0))) {
-      Alert.alert('Chưa nhập giá', 'Vui lòng tự nhập giá cho từng gói thời lượng của dịch vụ.');
+    if (!hasAnyListedPrice(selectedServices)) {
+      Alert.alert(
+        'Chưa có giá',
+        'Vui lòng nhập giá cho ít nhất một gói. Gói nào để trống giá sẽ được ẩn, khách không thấy.'
+      );
       return;
     }
 
@@ -783,11 +786,11 @@ export default function WorkerSetupScreen() {
             lng: longitude,
             isDefault: true,
           },
-          services: servicesList.map((s) => ({
+          services: listedServices(servicesList).map((s, sIdx) => ({
             categoryId: s.categoryId,
             basePrice: Number(s.basePrice) || 0,
-            isPrimary: s.categoryId === servicesList[0].categoryId,
-            options: (s.options || []).map((opt, oIdx) => ({
+            isPrimary: sIdx === 0,
+            options: s.options.map((opt, oIdx) => ({
               durationMinutes: Number(opt.durationMinutes) || 60,
               price: Number(opt.price) || 0,
               sortOrder: opt.sortOrder ?? oIdx + 1,
@@ -850,8 +853,8 @@ export default function WorkerSetupScreen() {
     formData.append('CreateAddressRequestDto.Lng', String(longitude));
     formData.append('CreateAddressRequestDto.IsDefault', 'true');
 
-    // Services
-    servicesList.forEach((s, idx) => {
+    // Services — chỉ gửi gói KTV đã nhập giá; gói để trống giá được ẩn
+    listedServices(servicesList).forEach((s, idx) => {
       formData.append(`WorkerService[${idx}].CategoryId`, s.categoryId);
       formData.append(`WorkerService[${idx}].BasePrice`, String(s.basePrice));
       formData.append(`WorkerService[${idx}].IsPrimary`, idx === 0 ? 'true' : 'false');
@@ -1107,14 +1110,10 @@ export default function WorkerSetupScreen() {
                   Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất một dịch vụ chuyên môn.');
                   return;
                 }
-                if (
-                  Object.values(selectedServices).some((svc) =>
-                    svc.options.some((o) => !o.price || o.price <= 0)
-                  )
-                ) {
+                if (!hasAnyListedPrice(selectedServices)) {
                   Alert.alert(
-                    'Chưa nhập giá',
-                    'Vui lòng tự nhập giá cho từng gói thời lượng. Giá do bạn quyết định, TAYZEN không đặt giá thay KTV.'
+                    'Chưa có giá',
+                    'Vui lòng nhập giá cho ít nhất một gói. Gói nào để trống giá sẽ được ẩn, khách không thấy.'
                   );
                   return;
                 }
@@ -2471,3 +2470,26 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+
+type ServiceDraft = {
+  categoryId: string;
+  basePrice: number;
+  options: { durationMinutes: number; price: number; sortOrder?: number; isActive?: boolean }[];
+};
+
+/** Bỏ các gói để trống giá; dịch vụ không còn gói nào có giá thì bỏ luôn. Giá cơ bản = giá thấp nhất. */
+function listedServices<T extends ServiceDraft>(services: T[]): T[] {
+  return services
+    .map((svc) => {
+      const options = (svc.options || [])
+        .filter((o) => Number(o.price) > 0)
+        .map((o, i) => ({ ...o, sortOrder: i + 1 }));
+      const basePrice = options.length > 0 ? Math.min(...options.map((o) => Number(o.price))) : 0;
+      return { ...svc, options, basePrice };
+    })
+    .filter((svc) => svc.options.length > 0);
+}
+
+function hasAnyListedPrice(services: Record<string, ServiceDraft>) {
+  return listedServices(Object.values(services)).length > 0;
+}

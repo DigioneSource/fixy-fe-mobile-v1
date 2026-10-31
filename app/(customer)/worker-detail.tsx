@@ -247,7 +247,9 @@ export default function WorkerDetailScreen() {
       const matchedCat = categories.find((c) => c.id === srv.categoryId);
       const name = displayCategoryName(matchedCat?.name) || `Dịch vụ ${index + 1}`;
 
-      const rawOptions = (srv.options || []).filter((opt: any) => opt.isActive !== false);
+      const rawOptions = (srv.options || []).filter(
+        (opt: any) => opt.isActive !== false && opt.price > 0
+      );
       const sortedOptions = [...rawOptions].sort((a: any, b: any) => a.durationMinutes - b.durationMinutes);
 
       const prices = sortedOptions.length > 0
@@ -264,7 +266,7 @@ export default function WorkerDetailScreen() {
         minPrice,
         basePrice: srv.basePrice || worker?.basePrice || 0,
       };
-    });
+    }).filter((srv) => srv.options.length > 0 || srv.minPrice > 0);
   }, [worker, categories]);
 
   // Compute selected items info for fixed bottom bar

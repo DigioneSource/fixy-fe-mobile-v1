@@ -104,10 +104,27 @@ export type WorkerSearchParams = {
   SortDescending?: boolean;
 };
 
+function hasPrice(opt: any) {
+  const price = typeof opt?.price === 'number' ? opt.price : opt?.Price;
+  return typeof price === 'number' && price > 0;
+}
+
+/** Giá thấp nhất KTV đã niêm yết cho một dịch vụ (bỏ qua gói để trống giá). */
+function minListedPrice(service: any) {
+  const prices = (service?.options || service?.Options || [])
+    .filter(hasPrice)
+    .map((opt: any) => (typeof opt.price === 'number' ? opt.price : opt.Price));
+  if (prices.length > 0) return Math.min(...prices);
+  return service?.basePrice > 0 ? service.basePrice : 0;
+}
+
 function getWorkerBasePrice(w: any, categoryId?: string) {
   const matchingService = categoryId
     ? w.services?.find((service: any) => service.categoryId === categoryId)
     : undefined;
+  if (matchingService) return minListedPrice(matchingService);
+  const listed = (w.services || []).map(minListedPrice).filter((p: number) => p > 0);
+  if (listed.length > 0) return Math.min(...listed);
   // Không có giá mặc định: KTV chưa niêm yết giá thì trả 0 (app ẩn KTV đó khỏi kết quả đặt).
   return matchingService?.basePrice || w.services?.[0]?.basePrice || w.basePrice || 0;
 }
@@ -221,6 +238,7 @@ function mapBackendWorkerToProfile(w: any, categoryId?: string): WorkerProfile {
           url: img.fileUrl || img.url || img || '',
         })
       ),
+    // Gói nào KTV để trống giá thì ẩn; dịch vụ không còn gói nào có giá cũng ẩn.
     services:
       (w.services || w.Services || [])?.map((s: any) => {
         const rawOpts = s.options || s.Options || [];
@@ -228,7 +246,7 @@ function mapBackendWorkerToProfile(w: any, categoryId?: string): WorkerProfile {
           categoryId: s.categoryId || s.CategoryId,
           basePrice: s.basePrice ?? s.BasePrice,
           isPrimary: s.isPrimary ?? s.IsPrimary,
-          options: rawOpts.map((opt: any) => ({
+          options: rawOpts.filter(hasPrice).map((opt: any) => ({
             id: opt.id || opt.Id,
             workerServiceId: opt.workerServiceId || opt.WorkerServiceId,
             durationMinutes: typeof opt.durationMinutes === 'number' ? opt.durationMinutes : (typeof opt.DurationMinutes === 'number' ? opt.DurationMinutes : 60),
@@ -237,7 +255,8 @@ function mapBackendWorkerToProfile(w: any, categoryId?: string): WorkerProfile {
             isActive: opt.isActive ?? opt.IsActive ?? true,
           })),
         };
-      }) || [],
+      })
+        .filter((s: any) => s.options.length > 0 || (s.basePrice ?? 0) > 0) || [],
   };
 }
 
