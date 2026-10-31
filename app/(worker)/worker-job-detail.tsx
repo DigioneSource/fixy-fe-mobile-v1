@@ -955,7 +955,16 @@ export default function WorkerJobDetailScreen() {
                     </Text>
                   </View>
                   {(() => {
-                    const c = calcCommission(origPrice);
+                    // Ưu tiên số máy chủ đã chốt khi đơn hoàn thành; chưa có thì hiện tạm tính.
+                    const c =
+                      job.platformFee != null && job.workerNet != null
+                        ? {
+                            fee: job.platformFee,
+                            vat: job.platformFeeVat ?? 0,
+                            workerNet: job.workerNet,
+                          }
+                        : calcCommission(origPrice);
+                    const isFinal = job.platformFee != null && job.workerNet != null;
                     return (
                       <>
                         <View style={styles.invoiceRow}>
@@ -972,7 +981,7 @@ export default function WorkerJobDetailScreen() {
                         </View>
                         <View style={styles.invoiceRow}>
                           <Text style={[styles.invoiceLabel, { fontFamily: 'Montserrat_700Bold' }]}>
-                            KTV thực nhận (tạm tính)
+                            KTV thực nhận{isFinal ? '' : ' (tạm tính)'}
                           </Text>
                           <Text style={[styles.invoiceVal, { fontFamily: 'Montserrat_700Bold', color: '#0F382C' }]}>
                             {formatCurrency(c.workerNet)}

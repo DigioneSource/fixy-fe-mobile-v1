@@ -3,7 +3,8 @@
 // (xem docs/BACKEND_SAFETY_SPEC.md). Chỉ bật khi backend đã hỗ trợ, tránh hiển thị thứ không có thật.
 
 export const FEATURE_WORKER_GENDER_PREFERENCE = false;
-export const FEATURE_CANCELLATION_FEES = false;
+// Backend đã tính phí huỷ ở /cancel (nhánh tayzen/self-host-security, 31/10/2026).
+export const FEATURE_CANCELLATION_FEES = true;
 
 // Số khẩn cấp quốc gia
 export const EMERGENCY_NUMBERS = [

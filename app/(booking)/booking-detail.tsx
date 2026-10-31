@@ -328,12 +328,20 @@ export default function BookingDetailScreen() {
     mutationFn: async (reason: string) => {
       return cancelBooking(bookingId || '', reason);
     },
-    onSuccess: (updatedBooking) => {
-      if (updatedBooking && updatedBooking.id) {
-        queryClient.setQueryData(['booking', bookingId], updatedBooking);
-      }
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
-      Alert.alert('Đã hủy', 'Đơn đặt lịch của bạn đã được hủy thành công.');
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      const lines = ['Đơn đặt lịch của bạn đã được hủy.'];
+      if (result.cancellationFee > 0) {
+        lines.push(
+          result.cancellationFeeCollected
+            ? `Phí huỷ ${formatCurrency(result.cancellationFee)} (bù chi phí di chuyển cho KTV). Số tiền hoàn lại: ${formatCurrency(result.refundAmount)}.`
+            : `Phí huỷ ${formatCurrency(result.cancellationFee)} (bù chi phí di chuyển cho KTV) sẽ được thu theo quy định.`
+        );
+      } else if (result.refundAmount > 0) {
+        lines.push(`Số tiền hoàn lại: ${formatCurrency(result.refundAmount)}.`);
+      }
+      Alert.alert('Đã hủy', lines.join('\n'));
     },
     onError: (error: any) => {
       const msg = error?.response?.data?.message || 'Không thể hủy đơn đặt lịch. Vui lòng thử lại.';

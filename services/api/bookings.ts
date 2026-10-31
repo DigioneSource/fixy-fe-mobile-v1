@@ -94,6 +94,11 @@ export type Booking = {
   estimatedAmount?: number;
   finalAmount?: number;
   finalPrice?: number;
+  /** Do máy chủ chốt khi đơn hoàn thành; chỉ KTV của đơn và ADMIN nhận giá trị. */
+  platformFee?: number | null;
+  platformFeeVat?: number | null;
+  workerNet?: number | null;
+  cancellationFee?: number | null;
   description?: string | null;
   mediaIds?: string[] | null;
   requestImages?: { id: string; fileUrl: string }[];
@@ -479,11 +484,30 @@ export async function completeBooking(
   return normalizeBooking(unwrapData(response.data));
 }
 
-export async function cancelBooking(bookingId: string, reason?: string): Promise<Booking> {
+export type CancelBookingResult = {
+  bookingId: string;
+  cancellationFee: number;
+  refundAmount: number;
+  workerCompensation: number;
+  /** false với đơn tiền mặt: phí huỷ chỉ là số phải thu, chưa thu được. */
+  cancellationFeeCollected: boolean;
+};
+
+export async function cancelBooking(
+  bookingId: string,
+  reason?: string
+): Promise<CancelBookingResult> {
   const response = await apiClient.post(`${BOOKING_PATH}/${bookingId}/cancel`, {
     reason: reason || 'Khách hàng hủy đơn',
   });
-  return normalizeBooking(unwrapData(response.data));
+  const data = unwrapData(response.data) ?? {};
+  return {
+    bookingId: data.bookingId ?? bookingId,
+    cancellationFee: Number(data.cancellationFee ?? 0),
+    refundAmount: Number(data.refundAmount ?? 0),
+    workerCompensation: Number(data.workerCompensation ?? 0),
+    cancellationFeeCollected: Boolean(data.cancellationFeeCollected),
+  };
 }
 
 export async function reorderBooking(bookingId: string): Promise<BookingDraft> {

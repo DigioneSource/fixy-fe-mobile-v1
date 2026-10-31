@@ -26,6 +26,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getApiErrorMessage } from '@/services/api/client';
 import { fetchCategories } from '@/services/api/categories';
 import { TermsModal } from '@/components/legal/legal-notice';
+import { LEGAL_VERSION } from '@/features/legal/legal-content';
 import { recognizeIdentityImage } from '@/services/api/fpt';
 import { prepareUploadFile } from '@/services/api/media';
 import { vietnamProvincesApi, matchAddressOption, cleanSearchText } from '@/services/api/provinces';
@@ -903,6 +904,9 @@ export default function WorkerSetupScreen() {
         formData.append('IdentificationUploads', fileObj);
       }
     });
+
+    // Phiên bản Hợp đồng sử dụng dịch vụ nền tảng KTV đã đồng ý — máy chủ lưu kèm thời điểm.
+    formData.append('PartnerTermsVersion', LEGAL_VERSION);
 
     // Ảnh khuôn mặt — máy chủ tự so khớp với CCCD mặt trước (không gửi điểm từ app).
     if (faceSelfieUri) {
