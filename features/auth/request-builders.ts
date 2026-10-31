@@ -14,6 +14,8 @@ export type RegisterBody = {
   password: string;
   target: string;
   roleRegister: number;
+  /** Token dùng một lần do /auth/otp/verify trả về — bắt buộc khi đăng ký. */
+  verifyToken: string;
 };
 
 export function buildRegisterBody(input: RegisterBody): RegisterBody {
@@ -22,6 +24,7 @@ export function buildRegisterBody(input: RegisterBody): RegisterBody {
     password: input.password,
     target: input.target,
     roleRegister: input.roleRegister,
+    verifyToken: input.verifyToken,
   };
 }
 
@@ -45,8 +48,8 @@ export function buildChangePasswordBody(target: string, oldPassword: string, new
   return { target, oldPassword, newPassword };
 }
 
-export function buildResetPasswordBody(target: string, newPassword: string) {
-  return { target, newPassword };
+export function buildResetPasswordBody(target: string, newPassword: string, verifyToken: string) {
+  return { target, newPassword, verifyToken };
 }
 
 export function buildGoogleLoginBody(credential: string, roleRegister?: number) {

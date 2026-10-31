@@ -27,8 +27,7 @@ import {
   sendOtp,
   verifyOtp,
   login as loginRequest,
-  loginGoogle,
-} from '@/features/auth/services/auth-api';
+  loginGoogle, extractVerifyToken } from '@/features/auth/services/auth-api';
 import { extractAuthTokens } from '@/features/auth/tokens';
 import { FieldErrors, validateRegisterForm } from '@/features/auth/validation';
 import { getApiErrorMessage } from '@/services/api/client';
@@ -108,6 +107,7 @@ export default function RegisterScreen() {
   // Verification & Flow States
   const [isOtpSent, setIsOtpSent] = React.useState(false);
   const [isOtpVerified, setIsOtpVerified] = React.useState(false);
+  const [verifyToken, setVerifyToken] = React.useState('');
   const [sendingOtp, setSendingOtp] = React.useState(false);
   const [verifyingOtp, setVerifyingOtp] = React.useState(false);
   const [otpError, setOtpError] = React.useState('');
@@ -127,6 +127,7 @@ export default function RegisterScreen() {
     role?: string;
     isOtpVerified?: string;
     step?: string;
+    verifyToken?: string;
   }>();
 
   React.useEffect(() => {
@@ -138,6 +139,7 @@ export default function RegisterScreen() {
       if (!params.step) setStep(2);
     }
     if (params.isOtpVerified === 'true') setIsOtpVerified(true);
+    if (params.verifyToken) setVerifyToken(params.verifyToken);
     if (params.step) setStep(parseInt(params.step, 10));
   }, [params]);
 
@@ -212,7 +214,8 @@ export default function RegisterScreen() {
     setVerifyingOtp(true);
     setOtpError('');
     try {
-      await verifyOtp(target, otpCode);
+      const verifyResponse = await verifyOtp(target, otpCode);
+      setVerifyToken(extractVerifyToken(verifyResponse));
       setIsOtpVerified(true);
       setOtpError('');
       setStep(3);
@@ -270,6 +273,7 @@ export default function RegisterScreen() {
       await register({
         ...validation.values,
         roleRegister: ROLE_REGISTER_VALUE[selectedRole],
+        verifyToken,
       });
 
       // Auto login

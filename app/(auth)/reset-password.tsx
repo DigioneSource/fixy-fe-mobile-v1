@@ -11,7 +11,7 @@ import { FieldErrors, validateResetPasswordForm } from '@/features/auth/validati
 import { getApiErrorMessage } from '@/services/api/client';
 
 export default function ResetPasswordScreen() {
-  const { target } = useLocalSearchParams<{ target: string }>();
+  const { target, verifyToken } = useLocalSearchParams<{ target: string; verifyToken?: string }>();
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [errors, setErrors] = React.useState<FieldErrors>({});
@@ -35,7 +35,7 @@ export default function ResetPasswordScreen() {
 
     setLoading(true);
     try {
-      await resetPassword(target, validation.values.password);
+      await resetPassword(target, validation.values.password, verifyToken ?? '');
       Alert.alert('Thành công', 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.', [
         { text: 'OK', onPress: () => router.replace('/login' as any) },
       ]);

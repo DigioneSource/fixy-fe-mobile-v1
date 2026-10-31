@@ -6,7 +6,7 @@ import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'reac
 import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthScreen } from '@/features/auth/components/auth-screen';
 import { FORGOT_PASSWORD_OTP_PURPOSE, REGISTRATION_OTP_PURPOSE } from '@/features/auth/constants';
-import { sendOtp, verifyOtp } from '@/features/auth/services/auth-api';
+import { sendOtp, verifyOtp, extractVerifyToken } from '@/features/auth/services/auth-api';
 import { extractAuthTokens } from '@/features/auth/tokens';
 import { validateOtpForm } from '@/features/auth/validation';
 import { getApiErrorMessage } from '@/services/api/client';
@@ -79,6 +79,7 @@ export default function OtpScreen() {
             selectedRole: selectedRole || '',
             isOtpVerified: 'true',
             step: '3',
+            verifyToken: extractVerifyToken(response),
           },
         });
         return;
@@ -87,7 +88,7 @@ export default function OtpScreen() {
       if (pendingOtpPurpose === FORGOT_PASSWORD_OTP_PURPOSE) {
         router.replace({
           pathname: '/reset-password' as any,
-          params: { target: pendingOtpTarget },
+          params: { target: pendingOtpTarget, verifyToken: extractVerifyToken(response) },
         });
         return;
       }

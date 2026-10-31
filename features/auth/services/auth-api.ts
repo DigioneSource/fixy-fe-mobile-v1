@@ -32,6 +32,11 @@ export async function verifyOtp(target: string, otpCode: string) {
   return response.data;
 }
 
+/** Lấy verifyToken (dùng một lần, 10 phút) từ phản hồi /auth/otp/verify. */
+export function extractVerifyToken(response: any): string {
+  return response?.data?.verifyToken ?? response?.verifyToken ?? '';
+}
+
 export async function login(target: string, password: string) {
   const response = await apiClient.post(AUTH_ENDPOINTS.login, buildLoginBody(target, password));
   return response.data;
@@ -53,10 +58,10 @@ export async function changePassword(target: string, oldPassword: string, newPas
   return response.data;
 }
 
-export async function resetPassword(target: string, newPassword: string) {
+export async function resetPassword(target: string, newPassword: string, verifyToken: string) {
   const response = await apiClient.post(
     AUTH_ENDPOINTS.resetPassword,
-    buildResetPasswordBody(target, newPassword)
+    buildResetPasswordBody(target, newPassword, verifyToken)
   );
   return response.data;
 }
