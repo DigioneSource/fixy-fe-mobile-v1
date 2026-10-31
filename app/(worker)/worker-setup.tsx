@@ -114,6 +114,8 @@ export default function WorkerSetupScreen() {
   const [citizenIdIssuePlace, setCitizenIdIssuePlace] = React.useState('');
   const [cccdFrontUri, setCccdFrontUri] = React.useState<string | null>(null);
   const [cccdBackUri, setCccdBackUri] = React.useState<string | null>(null);
+  // Ảnh khuôn mặt (selfie) — máy chủ so khớp với ảnh CCCD mặt trước để xác minh KTV.
+  const [faceSelfieUri, setFaceSelfieUri] = React.useState<string | null>(null);
 
   const cccdUris = React.useMemo(() => {
     return [cccdFrontUri, cccdBackUri].filter(Boolean) as string[];
@@ -461,6 +463,27 @@ export default function WorkerSetupScreen() {
     }
   };
 
+  const handleCaptureSelfie = async () => {
+    if (!cccdConsent) {
+      Alert.alert('Chưa đồng ý', 'Vui lòng đồng ý cho TAYZEN xử lý ảnh giấy tờ và khuôn mặt trước.');
+      return;
+    }
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Quyền truy cập', 'Vui lòng cho phép quyền truy cập camera để chụp ảnh khuôn mặt.');
+      return;
+    }
+    // Chỉ chụp trực tiếp, không chọn ảnh có sẵn — tránh dùng ảnh của người khác.
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      cameraType: ImagePicker.CameraType.front,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]?.uri) {
+      setFaceSelfieUri(result.assets[0].uri);
+    }
+  };
+
   const handleLibraryCccdSlot = async (slot: 'front' | 'back') => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -805,6 +828,7 @@ export default function WorkerSetupScreen() {
           citizenIdIssueDate,
           citizenIdIssuePlace,
           localUris: cccdUris,
+          faceSelfieUri,
         };
 
         const certificatesPayload = {
@@ -879,6 +903,18 @@ export default function WorkerSetupScreen() {
         formData.append('IdentificationUploads', fileObj);
       }
     });
+
+    // Ảnh khuôn mặt — máy chủ tự so khớp với CCCD mặt trước (không gửi điểm từ app).
+    if (faceSelfieUri) {
+      const selfieFile = await prepareUploadFile(faceSelfieUri, 'face_selfie.jpg', {
+        compress: true,
+        resizeWidth: 1080,
+        quality: 0.8,
+      });
+      if (selfieFile) {
+        formData.append('FaceSelfieUpload', selfieFile);
+      }
+    }
 
     // Portfolio uploads
     const portfolioFiles = await Promise.all(
@@ -1134,9 +1170,10 @@ export default function WorkerSetupScreen() {
 
             <View style={styles.cccdConsentBox}>
               <Text style={styles.cccdConsentText}>
-                TAYZEN thu ảnh CCCD chỉ để xác minh danh tính KTV, khấu trừ thuế và phối hợp với cơ quan
-                chức năng khi có sự cố an toàn. Ảnh được nhận dạng tự động qua đối tác FPT Smart Cloud và
-                không chia sẻ cho khách hàng.
+                TAYZEN thu ảnh CCCD và ảnh khuôn mặt chỉ để xác minh danh tính KTV, khấu trừ thuế và phối
+                hợp với cơ quan chức năng khi có sự cố an toàn. Ảnh khuôn mặt được so khớp tự động với ảnh
+                CCCD ngay trên máy chủ của TAYZEN tại Việt Nam. Các ảnh này không chia sẻ cho khách hàng và
+                chỉ bạn cùng bộ phận kiểm duyệt của TAYZEN xem được.
               </Text>
               <Pressable
                 style={styles.cccdConsentRow}
@@ -1221,6 +1258,32 @@ export default function WorkerSetupScreen() {
                 )}
               </Pressable>
             )}
+
+            <View style={styles.selfieBox}>
+              <Text style={styles.cccdSlotHeaderLabel}>Ảnh khuôn mặt {isEditMode ? '' : '*'}</Text>
+              <Text style={styles.selfieHint}>
+                Chụp chính diện, đủ sáng, không đeo kính râm hay khẩu trang. TAYZEN so khớp ảnh này với
+                ảnh CCCD để xác minh bạn đúng là chủ giấy tờ.
+              </Text>
+              <View style={styles.selfieRow}>
+                {faceSelfieUri ? (
+                  <Image source={{ uri: faceSelfieUri }} style={styles.selfieImage} />
+                ) : (
+                  <View style={[styles.selfieImage, styles.selfieEmpty]}>
+                    <MaterialIcons name="face" size={36} color="#98A2B3" />
+                  </View>
+                )}
+                <Pressable
+                  style={styles.selfieBtn}
+                  onPress={handleCaptureSelfie}
+                  accessibilityRole="button">
+                  <MaterialIcons name="photo-camera-front" size={18} color="#0F382C" />
+                  <Text style={styles.selfieBtnText}>
+                    {faceSelfieUri ? 'Chụp lại' : 'Chụp ảnh khuôn mặt'}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
 
             <Text style={styles.fieldLabel}>Số căn cước công dân (CCCD)</Text>
             <TextInput
@@ -1346,6 +1409,10 @@ export default function WorkerSetupScreen() {
                       'Thiếu ảnh CCCD',
                       'Vui lòng tải đủ 2 mặt (Mặt trước và Mặt sau) của CCCD để tiếp tục.'
                     );
+                    return;
+                  }
+                  if (!isEditMode && !faceSelfieUri) {
+                    Alert.alert('Thiếu ảnh khuôn mặt', 'Vui lòng chụp ảnh khuôn mặt để xác minh danh tính.');
                     return;
                   }
                   setCurrentStep(3);
@@ -2468,6 +2535,52 @@ const styles = StyleSheet.create({
     color: '#0F382C',
     fontFamily: 'Montserrat_700Bold',
     textDecorationLine: 'underline',
+  },
+  selfieBox: {
+    gap: 8,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E4E7EC',
+    backgroundColor: '#FFFFFF',
+  },
+  selfieHint: {
+    color: '#667085',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  selfieRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  selfieImage: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
+  selfieEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F2F4F7',
+  },
+  selfieBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    minHeight: 44,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#0F382C',
+  },
+  selfieBtnText: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_600SemiBold',
+    fontSize: 14,
   },
 });
 

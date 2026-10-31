@@ -715,6 +715,7 @@ export async function updateIdentificationImages(payload: {
   citizenIdIssueDate: string;
   citizenIdIssuePlace: string;
   localUris: string[];
+  faceSelfieUri?: string | null;
 }): Promise<any> {
   const formData = new FormData();
   formData.append('CitizenIdNumber', payload.citizenIdNumber);
@@ -730,6 +731,16 @@ export async function updateIdentificationImages(payload: {
       formData.append('Images', fileObj);
     }
   });
+  if (payload.faceSelfieUri) {
+    const selfieFile = await prepareUploadFile(payload.faceSelfieUri, `face_${Date.now()}.jpg`, {
+      compress: true,
+      resizeWidth: 1080,
+      quality: 0.8,
+    });
+    if (selfieFile) {
+      formData.append('FaceSelfie', selfieFile);
+    }
+  }
 
   const response = await apiClient.put('/worker-profiles/me/identification-images', formData, {
     headers: {

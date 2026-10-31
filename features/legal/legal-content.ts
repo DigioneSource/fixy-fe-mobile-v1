@@ -1,7 +1,7 @@
 // Nội dung pháp lý hiển thị khi đăng ký và khi đặt đơn.
 // Bản nháp nội bộ — cần luật sư rà soát trước khi phát hành chính thức.
 
-export const LEGAL_VERSION = '2026-10-31.2';
+export const LEGAL_VERSION = '2026-10-31.3';
 
 export const LAW_VIOLATION_NOTICE = 'Nghiêm cấm mọi hành vi vi phạm pháp luật';
 
@@ -99,7 +99,7 @@ export const PRIVACY_POLICY: LegalSection[] = [
     items: [
       'Họ tên, số điện thoại hoặc email, địa chỉ phục vụ.',
       'Vị trí của thiết bị khi bạn đang dùng dịch vụ hoặc khi bấm nút SOS.',
-      'Với KTV: thêm ảnh căn cước công dân (CCCD), chứng chỉ nghề và ảnh làm việc thực tế.',
+      'Với KTV: thêm ảnh căn cước công dân (CCCD), ảnh khuôn mặt (để so khớp với CCCD), chứng chỉ nghề và ảnh làm việc thực tế. Ảnh CCCD và ảnh khuôn mặt chỉ chính KTV và bộ phận kiểm duyệt của TAYZEN xem được.',
     ],
   },
   {
@@ -114,7 +114,7 @@ export const PRIVACY_POLICY: LegalSection[] = [
   {
     title: '3. Bên nhận dữ liệu',
     items: [
-      'FPT Smart Cloud: nhận dạng tự động thông tin trên ảnh CCCD của KTV.',
+      'Dữ liệu được lưu trên máy chủ của TAYZEN đặt tại Việt Nam; việc so khớp khuôn mặt với CCCD chạy ngay trên máy chủ này, không gửi cho bên thứ ba.',
       'Cổng thanh toán PayOS, VNPay: xử lý giao dịch thanh toán.',
       'Cơ quan nhà nước có thẩm quyền khi pháp luật yêu cầu.',
       'TAYZEN không bán dữ liệu cá nhân của bạn cho bất kỳ ai.',
