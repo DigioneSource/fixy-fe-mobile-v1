@@ -56,7 +56,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "vn.tayzen.app"
+      "bundleIdentifier": "vn.tayzen.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

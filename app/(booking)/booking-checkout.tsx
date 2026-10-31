@@ -1153,12 +1153,14 @@ function formatScheduleLabel(date: Date) {
   )}/${date.getFullYear()}`;
 }
 
+// Không dùng "parameter properties" (constructor(public x)): babel class plugin chạy trước TypeScript
+// sẽ sinh mã hỏng khi biên dịch Hermes bản release.
 class VoucherApplyError extends Error {
-  constructor(
-    public bookingId: string,
-    message: string
-  ) {
+  bookingId: string;
+
+  constructor(bookingId: string, message: string) {
     super(message);
+    this.bookingId = bookingId;
   }
 }
 
