@@ -189,7 +189,7 @@ export default function ProfileInfoScreen() {
     <View style={styles.screen}>
       {/* Top Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.headerButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={20} color="#1b1c1c" />
         </Pressable>
         <Text style={styles.headerTitle}>Thông tin cá nhân</Text>

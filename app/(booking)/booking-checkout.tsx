@@ -580,7 +580,7 @@ export default function BookingCheckoutScreen() {
       />
       {/* Header Bar */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#1C2526" />
         </Pressable>
         <Text style={styles.headerTitle}>Thông tin đặt lịch</Text>

@@ -69,6 +69,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(worker)" options={{ gestureEnabled: false }} />
                 <Stack.Screen name="(booking)" />
                 <Stack.Screen name="(location)" />
+                <Stack.Screen name="legal-info" />
                 <Stack.Screen name="+not-found" />
               </Stack>
             </NavThemeProvider>

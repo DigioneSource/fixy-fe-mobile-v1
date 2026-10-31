@@ -1,6 +1,10 @@
 import Constants from 'expo-constants';
 import { Alert, Platform } from 'react-native';
 
+// Apple 4.8: app có đăng nhập Google phải có thêm Sign in with Apple. Backend chưa có endpoint Apple,
+// nên tạm ẩn Google trên iOS để không bị từ chối khi duyệt; bật lại khi có Sign in with Apple.
+export const SHOW_GOOGLE_SIGN_IN = Platform.OS !== 'ios';
+
 let GoogleSignin: any = null;
 let statusCodes: any = null;
 

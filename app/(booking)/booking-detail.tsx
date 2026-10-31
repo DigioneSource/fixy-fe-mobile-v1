@@ -553,7 +553,7 @@ export default function BookingDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top, justifyContent: 'space-between' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Pressable
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại"
             style={styles.backButton}
             onPress={() => {
               if (router.canGoBack()) {
@@ -859,6 +859,10 @@ export default function BookingDetailScreen() {
               <Text style={styles.costTotalLabel}>Tổng số tiền cần thanh toán</Text>
               <Text style={styles.costTotalValue}>{formatCurrency(finalTotalAmount)}</Text>
             </View>
+            <Text style={styles.providerNote}>
+              Người cung ứng dịch vụ: {booking.worker?.fullName || booking.workerName || 'KTV'} (KTV độc lập)
+              {'\n'}Nền tảng: TAYZEN — thu hộ tiền dịch vụ cho KTV. Giá do KTV niêm yết.
+            </Text>
 
             {booking.completeImages && booking.completeImages.length > 0 && (
               <View style={{ marginTop: 16 }}>
@@ -1985,5 +1989,12 @@ const styles = StyleSheet.create({
   },
   payMethodTextActive: {
     color: '#0F382C',
+  },
+  providerNote: {
+    marginTop: 10,
+    color: '#667085',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

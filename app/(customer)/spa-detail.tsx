@@ -111,7 +111,7 @@ export default function SpaDetailScreen() {
     <View style={styles.screen}>
       {/* Back Button Header Bar Overlay */}
       <View style={[styles.headerOverlay, { paddingTop: insets.top + 8 }]}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={22} color="#0F382C" />
         </Pressable>
         <Text style={styles.headerTitleText} numberOfLines={1}>

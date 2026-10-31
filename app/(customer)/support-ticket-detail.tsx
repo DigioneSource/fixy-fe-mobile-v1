@@ -209,7 +209,7 @@ export default function SupportTicketDetailScreen() {
       keyboardVerticalOffset={0}>
       {/* Top Header */}
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
-        <Pressable style={styles.headerButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={18} color="#1b1c1c" />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>

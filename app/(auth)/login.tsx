@@ -7,7 +7,7 @@ import { AuthButton } from '@/features/auth/components/auth-button';
 import { AuthScreen } from '@/features/auth/components/auth-screen';
 import { AuthTextField } from '@/features/auth/components/auth-text-field';
 import { GoogleIcon } from '@/features/auth/components/google-icon';
-import { promptGoogleSignIn } from '@/features/auth/services/google-auth';
+import { promptGoogleSignIn, SHOW_GOOGLE_SIGN_IN } from '@/features/auth/services/google-auth';
 import { login as loginRequest, loginGoogle } from '@/features/auth/services/auth-api';
 import { extractAuthTokens } from '@/features/auth/tokens';
 import { FieldErrors, validateLoginForm } from '@/features/auth/validation';
@@ -158,7 +158,7 @@ export default function LoginScreen() {
     <AuthScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => router.replace('/')}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.replace('/')}>
             <MaterialIcons name="arrow-back" size={26} color="#0F382C" />
           </Pressable>
           <Text style={styles.title}>Đăng nhập</Text>
@@ -198,18 +198,20 @@ export default function LoginScreen() {
         <View style={styles.actions}>
           <AuthButton label="Đăng nhập" loading={loading} onPress={onSubmit} />
 
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>hoặc</Text>
-            <View style={styles.divider} />
-          </View>
+          {SHOW_GOOGLE_SIGN_IN ? (
+            <>
+              <View style={styles.dividerRow}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>hoặc</Text>
+                <View style={styles.divider} />
+              </View>
 
-          <Pressable
-            style={styles.googleButton}
-            onPress={googleSignIn}>
-            <GoogleIcon size={24} />
-            <Text style={styles.googleText}>Đăng nhập với Google</Text>
-          </Pressable>
+              <Pressable style={styles.googleButton} onPress={googleSignIn}>
+                <GoogleIcon size={24} />
+                <Text style={styles.googleText}>Đăng nhập với Google</Text>
+              </Pressable>
+            </>
+          ) : null}
 
           <View style={styles.footerRow}>
             <Text style={styles.footerText}>Chưa có tài khoản? </Text>

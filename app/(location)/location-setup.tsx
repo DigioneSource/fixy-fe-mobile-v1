@@ -618,7 +618,7 @@ export default function LocationSetupScreen() {
       style={styles.screen}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={26} color="#1B1C1C" />
         </Pressable>
         <Text style={styles.brand}>Bản đồ dịch vụ</Text>
@@ -988,7 +988,7 @@ export default function LocationSetupScreen() {
               /* VIEW 2: CHỌN TỈNH / THÀNH PHỐ */
               <>
                 <View style={styles.modalHeader}>
-                  <Pressable onPress={() => setPickerMode('form')} style={styles.backPickerBtn}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => setPickerMode('form')} style={styles.backPickerBtn}>
                     <MaterialIcons name="arrow-back" size={22} color="#0F382C" />
                   </Pressable>
                   <Text style={styles.modalTitle}>Chọn Tỉnh / Thành phố</Text>
@@ -1036,7 +1036,7 @@ export default function LocationSetupScreen() {
               /* VIEW 3: CHỌN PHƯỜNG / XÃ */
               <>
                 <View style={styles.modalHeader}>
-                  <Pressable onPress={() => setPickerMode('form')} style={styles.backPickerBtn}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => setPickerMode('form')} style={styles.backPickerBtn}>
                     <MaterialIcons name="arrow-back" size={22} color="#0F382C" />
                   </Pressable>
                   <Text style={styles.modalTitle}>Chọn Phường / Xã</Text>

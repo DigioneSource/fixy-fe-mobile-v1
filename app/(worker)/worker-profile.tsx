@@ -1055,7 +1055,10 @@ export default function WorkerProfileScreen() {
             <MaterialIcons name="logout" size={20} color="#ba1a1a" />
             <Text className="font-montserrat-semibold text-sm text-[#ba1a1a]">Đăng xuất</Text>
           </Pressable>
-          <Pressable className="mt-4 min-h-[44px] justify-center px-4" onPress={() => setDeleteAccountOpen(true)}>
+          <Pressable className="mt-4 min-h-[44px] justify-center px-4" onPress={() => router.push('/legal-info' as any)}>
+            <Text className="font-montserrat-semibold text-sm text-[#0F382C] underline">Thông tin pháp lý & hợp đồng</Text>
+          </Pressable>
+          <Pressable className="min-h-[44px] justify-center px-4" onPress={() => setDeleteAccountOpen(true)}>
             <Text className="font-montserrat text-sm text-[#818A91] underline">Xoá tài khoản</Text>
           </Pressable>
         </View>
@@ -1120,7 +1123,7 @@ export default function WorkerProfileScreen() {
               <View className="w-full">
                 <View className="flex-row justify-between items-center border-b border-[#f5f3f2] pb-3 mb-4">
                   <View className="flex-row items-center gap-2">
-                    <Pressable onPress={() => setOptionPickerOpen(false)} className="p-1">
+                    <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => setOptionPickerOpen(false)} className="p-1">
                       <MaterialIcons name="arrow-back" size={24} color="#383838" />
                     </Pressable>
                     <Text className="font-montserrat-bold text-base text-[#383838]">

@@ -132,7 +132,7 @@ export default function OtpScreen() {
     <AuthScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={26} color="#0F382C" />
           </Pressable>
           <Image

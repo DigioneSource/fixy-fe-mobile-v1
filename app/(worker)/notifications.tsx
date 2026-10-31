@@ -188,7 +188,7 @@ export default function WorkerNotificationsScreen() {
       <View 
         className="h-24 flex-row items-center justify-between px-4 bg-white border-b border-[#EFECE6] z-10"
         style={{ paddingTop: insets.top }}>
-        <Pressable className="p-2 items-center justify-center" onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" className="p-2 items-center justify-center" onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={20} color="#0F382C" />
         </Pressable>
         <Text className="flex-1 text-center text-lg text-[#0F382C] ml-3 font-montserrat-bold">

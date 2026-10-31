@@ -589,7 +589,7 @@ export default function BookingChatScreen() {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <View style={styles.header}>
-          <Pressable style={styles.headerBtn} onPress={() => router.back()}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerBtn} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color="#0F382C" />
           </Pressable>
           <Text style={styles.headerTitle}>Hội thoại</Text>
@@ -625,7 +625,7 @@ export default function BookingChatScreen() {
     <View style={styles.screen}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.headerBtn} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#1b1c1c" />
         </Pressable>
 

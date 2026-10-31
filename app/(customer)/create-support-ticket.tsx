@@ -64,7 +64,7 @@ export default function CreateSupportTicketScreen() {
     <View style={styles.screen}>
       {/* Top Header */}
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12) }]}>
-        <Pressable style={styles.headerButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={18} color="#1b1c1c" />
         </Pressable>
         <Text style={styles.headerTitle}>Gửi yêu cầu hỗ trợ</Text>

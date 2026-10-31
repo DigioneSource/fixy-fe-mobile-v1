@@ -105,7 +105,7 @@ export default function SavedAddressesScreen() {
     <View style={styles.screen}>
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={26} color="#1B1C1C" />
         </Pressable>
         <Text style={styles.brand}>Địa chỉ đã lưu</Text>

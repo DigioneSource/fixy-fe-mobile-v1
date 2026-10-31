@@ -713,7 +713,7 @@ export default function WorkerJobDetailScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: Math.max(insets.top, 12), justifyContent: 'space-between' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={() => router.back()}>
             <MaterialIcons name="arrow-back" size={24} color="#1B1C1C" />
           </Pressable>
           <Text style={styles.headerTitle}>Chi tiết công việc</Text>

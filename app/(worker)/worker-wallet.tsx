@@ -488,7 +488,7 @@ export default function WorkerWalletScreen() {
             {bankPickerOpen ? (
               <>
                 <View style={styles.modalHeader}>
-                  <Pressable
+                  <Pressable accessibilityRole="button" accessibilityLabel="Quay lại"
                     style={styles.modalBackButton}
                     onPress={() => setBankPickerOpen(false)}>
                     <MaterialIcons name="arrow-back" size={24} color="#383838" />
@@ -647,7 +647,7 @@ export default function WorkerWalletScreen() {
             {withdrawAccountDropdownOpen ? (
               <>
                 <View style={styles.modalHeader}>
-                  <Pressable
+                  <Pressable accessibilityRole="button" accessibilityLabel="Quay lại"
                     style={styles.modalBackButton}
                     onPress={() => setWithdrawAccountDropdownOpen(false)}>
                     <MaterialIcons name="arrow-back" size={24} color="#383838" />

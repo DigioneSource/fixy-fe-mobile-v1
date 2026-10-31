@@ -453,7 +453,7 @@ export default function BookingTrackingScreen() {
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
-        <Pressable style={styles.headerBtn} onPress={handleGoBack}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerBtn} onPress={handleGoBack}>
           <MaterialIcons name="arrow-back" size={24} color="#0F382C" />
         </Pressable>
         <Text style={styles.headerTitle}>Theo dõi đơn hàng</Text>

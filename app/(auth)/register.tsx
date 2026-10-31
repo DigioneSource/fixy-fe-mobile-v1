@@ -21,7 +21,7 @@ import {
   REGISTRATION_OTP_PURPOSE,
   WORKER_ROLE_REGISTER,
 } from '@/features/auth/constants';
-import { promptGoogleSignIn } from '@/features/auth/services/google-auth';
+import { promptGoogleSignIn, SHOW_GOOGLE_SIGN_IN } from '@/features/auth/services/google-auth';
 import {
   register,
   sendOtp,
@@ -298,7 +298,7 @@ export default function RegisterScreen() {
     <AuthScreen>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={goBack}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backButton} onPress={goBack}>
             <MaterialIcons name="arrow-back" size={26} color="#0F382C" />
           </Pressable>
           <Text style={styles.title}>Đăng ký tài khoản</Text>
@@ -676,21 +676,25 @@ function RegisterForm({
             </View>
 
             {/* Google sign-in shortcut */}
-            <View style={styles.dividerRow}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>hoặc</Text>
-              <View style={styles.divider} />
-            </View>
+            {SHOW_GOOGLE_SIGN_IN ? (
+              <View style={styles.dividerRow}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>hoặc</Text>
+                <View style={styles.divider} />
+              </View>
+            ) : null}
 
             <LawViolationBanner detail="TAYZEN là nền tảng kết nối với KTV độc lập; trên TAYZEN chỉ có dịch vụ chăm sóc thư giãn và làm đẹp. Mọi hành vi trái pháp luật đều bị cấm và khoá tài khoản vĩnh viễn." />
             {termsAgreement}
 
-            <Pressable
-              style={[styles.googleButton, !acceptedAll && styles.googleButtonDisabled]}
-              onPress={onGoogleSignIn}>
-              <GoogleIcon size={24} />
-              <Text style={styles.googleText}>Đăng ký với Google</Text>
-            </Pressable>
+            {SHOW_GOOGLE_SIGN_IN ? (
+              <Pressable
+                style={[styles.googleButton, !acceptedAll && styles.googleButtonDisabled]}
+                onPress={onGoogleSignIn}>
+                <GoogleIcon size={24} />
+                <Text style={styles.googleText}>Đăng ký với Google</Text>
+              </Pressable>
+            ) : null}
           </View>
         )}
 

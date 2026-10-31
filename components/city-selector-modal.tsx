@@ -140,7 +140,7 @@ export function CitySelectorModal({ visible, onClose, onSelectCity }: CitySelect
       <View style={[styles.container, { paddingTop: insets.top }]}>
         {/* Header bar */}
         <View style={styles.headerRow}>
-          <Pressable style={styles.backBtn} onPress={onClose}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.backBtn} onPress={onClose}>
             <MaterialIcons name="arrow-back" size={24} color="#1B1C1C" />
           </Pressable>
 

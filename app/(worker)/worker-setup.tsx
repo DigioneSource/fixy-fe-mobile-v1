@@ -924,7 +924,7 @@ export default function WorkerSetupScreen() {
   return (
     <View style={styles.screen}>
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable 
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" 
           style={styles.headerBackBtn} 
           onPress={() => router.replace('/(worker)/worker-home' as any)}>
           <MaterialIcons name="arrow-back" size={24} color="#383838" />

@@ -262,6 +262,16 @@ export default function ProfileScreen() {
 
             <View style={styles.menuDivider} />
 
+            <Pressable style={styles.menuItemRow} onPress={() => router.push('/legal-info' as any)}>
+              <View style={styles.menuLeft}>
+                <MaterialIcons name="gavel" size={22} color="#0F382C" />
+                <Text style={styles.menuItemText}>Thông tin pháp lý</Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={22} color="#818A91" />
+            </Pressable>
+
+            <View style={styles.menuDivider} />
+
             <Pressable style={styles.menuItemRow} onPress={handleLogout}>
               <View style={styles.menuLeft}>
                 <MaterialIcons name="logout" size={22} color="#DC2626" />

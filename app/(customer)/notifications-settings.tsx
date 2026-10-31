@@ -49,7 +49,7 @@ export default function NotificationSettingsScreen() {
     <View style={styles.screen}>
       {/* Top Header */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.headerButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.headerButton} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back-ios" size={20} color="#0F382C" />
         </Pressable>
         <Text style={styles.headerTitle}>Cài đặt thông báo</Text>

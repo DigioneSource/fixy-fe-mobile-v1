@@ -264,7 +264,7 @@ export default function ServiceWorkersScreen() {
     <View style={styles.screen}>
       {/* Header Matching Image 3 */}
       <View style={[styles.header, { paddingTop: insets.top }]}>
-        <Pressable style={styles.iconBtn} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.iconBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#0F382C" />
         </Pressable>
 
