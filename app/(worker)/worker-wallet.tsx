@@ -20,6 +20,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 
 import { WorkerTabBar } from '@/components/layout/worker-tab-bar';
+import { WalletTopupModal } from '@/components/wallet/wallet-topup-modal';
+import {
+  formatPercent,
+  PLATFORM_FEE_TOTAL_RATE,
+  WORKER_CASH_DEPOSIT_RATE,
+} from '@/features/finance/commission';
 import { getWalletOverview, WalletOverview } from '@/services/api/wallet';
 import { getApiErrorMessage } from '@/services/api/client';
 import { formatDateTime } from '@/utils/date';
@@ -93,6 +99,7 @@ export default function WorkerWalletScreen() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = React.useState(false);
+  const [topupOpen, setTopupOpen] = React.useState(false);
   const [withdrawAccountDropdownOpen, setWithdrawAccountDropdownOpen] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [selectedPayoutAccountId, setSelectedPayoutAccountId] = React.useState('');
@@ -313,13 +320,28 @@ export default function WorkerWalletScreen() {
               ) : null}
             </View>
             <View style={styles.balanceActions}>
+              <Pressable style={styles.withdrawBtn} onPress={() => setTopupOpen(true)}>
+                <MaterialIcons name="add-card" size={18} color="#0F382C" />
+                <Text style={[styles.withdrawBtnText, { color: '#0F382C' }]}>Nạp ký quỹ</Text>
+              </Pressable>
               <Pressable style={styles.withdrawBtn} onPress={handleWithdraw}>
                 <MaterialIcons name="payments" size={18} color="#9a4600" />
                 <Text style={styles.withdrawBtnText}>Rút tiền</Text>
               </Pressable>
             </View>
           </LinearGradient>
+          <Text style={styles.depositHint}>
+            Đơn tiền mặt cần ví có tối thiểu {formatPercent(WORKER_CASH_DEPOSIT_RATE)} giá trị đơn để nhận việc.
+            Phí nền tảng {formatPercent(PLATFORM_FEE_TOTAL_RATE)} (đã gồm VAT) được tạm thu từ ví khi nhận đơn.
+          </Text>
         </View>
+        <WalletTopupModal
+          visible={topupOpen}
+          onClose={() => setTopupOpen(false)}
+          onDone={() => fetchWallet(true)}
+          title="Nạp ký quỹ"
+          note="Ký quỹ dùng để nhận đơn thanh toán tiền mặt. Bạn có thể rút phần chưa dùng bất cứ lúc nào."
+        />
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -873,6 +895,9 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   balanceActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 8,
     alignItems: 'flex-end',
     zIndex: 1,
   },
@@ -1385,5 +1410,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#818A91',
     marginTop: 2,
+  },
+  depositHint: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+    color: '#667085',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

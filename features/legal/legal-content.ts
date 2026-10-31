@@ -1,7 +1,7 @@
 // Nội dung pháp lý hiển thị khi đăng ký và khi đặt đơn.
 // Bản nháp nội bộ — cần luật sư rà soát trước khi phát hành chính thức.
 
-export const LEGAL_VERSION = '2026-10-30.2';
+export const LEGAL_VERSION = '2026-10-31.1';
 
 export const LAW_VIOLATION_NOTICE = 'Nghiêm cấm mọi hành vi vi phạm pháp luật';
 
@@ -34,6 +34,14 @@ export const REGISTRATION_TERMS: LegalSection[] = [
       'Người dùng chịu hoàn toàn trách nhiệm trước pháp luật về mọi hoạt động thực hiện qua tài khoản của mình.',
       'KTV cam kết có đủ giấy tờ tuỳ thân, chứng chỉ và điều kiện hành nghề.',
       'TAYZEN khấu trừ và nộp thay thuế GTGT, TNCN trên doanh thu mỗi đơn của KTV theo Nghị định 117/2025/NĐ-CP và cấp chứng từ khấu trừ khi KTV yêu cầu.',
+    ],
+  },
+  {
+    title: '3a. Phí nền tảng, ký quỹ và liên lạc trong ứng dụng',
+    items: [
+      'KTV trả TAYZEN phí nền tảng bằng 30% giá dịch vụ (chưa gồm thuế GTGT), tức 33% sau thuế. Voucher, khuyến mãi do TAYZEN phát hành không trừ vào thu nhập KTV.',
+      'Với đơn khách thanh toán tiền mặt, ví KTV phải có số dư ký quỹ tối thiểu 40% giá trị đơn tại thời điểm nhận đơn; TAYZEN tạm thu phí nền tảng từ ví khi KTV nhận đơn. Phần ký quỹ chưa dùng được rút theo quy định rút tiền.',
+      'Khách hàng và KTV chỉ liên lạc qua tính năng nhắn tin, gọi trong ứng dụng; TAYZEN không hiển thị số điện thoại của hai bên. Nghiêm cấm trao đổi số điện thoại, tài khoản mạng xã hội hoặc thoả thuận giao dịch ngoài ứng dụng. Vi phạm có thể bị khoá tài khoản và mất quyền được TAYZEN hỗ trợ, bảo vệ.',
     ],
   },
   {

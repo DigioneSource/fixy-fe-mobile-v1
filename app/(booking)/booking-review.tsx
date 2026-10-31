@@ -23,6 +23,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { submitReview } from '@/services/api/reviews';
 import { getApiErrorMessage } from '@/services/api/client';
 import { prepareUploadFile } from '@/services/api/media';
+import { displayCategoryName } from '@/utils/category-label';
 
 const STORE_REVIEW_LAST_ASKED_KEY = 'tayzen_store_review_last_asked_at';
 const STORE_REVIEW_INTERVAL_MS = 90 * 24 * 60 * 60 * 1000;
@@ -182,7 +183,7 @@ export default function BookingReviewScreen() {
           <View>
             <Text style={styles.workerName}>{params.workerName ?? 'Nguyễn Văn Thắng'}</Text>
             <Text style={styles.workerSpecialty}>
-              {params.categoryName ?? 'Chuyên gia Điện nước'}
+              {displayCategoryName(params.categoryName) || 'Kỹ thuật viên TAYZEN'}
             </Text>
           </View>
         </View>

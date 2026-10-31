@@ -29,7 +29,7 @@ const SPA_BANNER_CARDS = [
   {
     id: 'health',
     title: 'Sức khoẻ tại nhà',
-    subtitle: 'Massage cổ vai gáy, trị liệu đau mỏi',
+    subtitle: 'Chăm sóc vai gáy, giảm mỏi',
     category: 'suc-khoe',
     image: require('@/assets/SUC KHOE TAI NHA.webp'),
   },

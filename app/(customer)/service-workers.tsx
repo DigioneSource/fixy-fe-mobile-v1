@@ -23,6 +23,7 @@ import { formatCurrency } from '@/utils/format';
 import { useQuery } from '@tanstack/react-query';
 import { CitySelectorModal } from '@/components/city-selector-modal';
 import { useLocationStore } from '@/store/store';
+import { displayCategoryName } from '@/utils/category-label';
 
 const WORKERS_PAGE_SIZE = 50;
 const MAX_WORKER_PAGES = 20;
@@ -321,7 +322,7 @@ export default function ServiceWorkersScreen() {
           <Text
             style={[styles.chipDropdownText, !!selectedCategory && styles.chipTextActive]}
             numberOfLines={1}>
-            {selectedCategory ? selectedCategory.name : 'Loại dịch vụ'}
+            {selectedCategory ? displayCategoryName(selectedCategory.name) : 'Loại dịch vụ'}
           </Text>
           <MaterialIcons
             name="keyboard-arrow-down"
@@ -480,7 +481,7 @@ export default function ServiceWorkersScreen() {
                         styles.categoryItemText,
                         isSelected && styles.categoryItemTextActive,
                       ]}>
-                      {cat.name}
+                      {displayCategoryName(cat.name)}
                     </Text>
                     {isSelected ? (
                       <MaterialIcons name="check-circle" size={20} color="#0F382C" />

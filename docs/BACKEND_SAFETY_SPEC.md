@@ -112,3 +112,44 @@ Các mục dưới là **suy luận từ thiết kế API**; đội BE xác nh�
   doanh thu dịch vụ của KTV. Ví KTV cần tách: doanh thu, phí nền tảng, thuế đã khấu trừ.
 - **Hoa hồng**: Swagger không có trường phí nền tảng nào. CEO chốt %, BE trả `platformFee`, `workerNet` mỗi đơn.
 - **Lưu đồng ý**: lưu phiên bản điều khoản + thời điểm đồng ý (Luật 91/2025/QH15, NĐ 356/2025).
+
+## Quyết định CEO 31/10/2026 — việc backend
+
+### 1. Phí nền tảng 30% + VAT = 33%
+- Mỗi đơn hoàn thành: `platformFee = 30% × giá dịch vụ (trước voucher)`, `platformFeeVat = 10% × platformFee`,
+  `workerNet = giá − platformFee − platformFeeVat`. Voucher do TAYZEN chịu, không trừ vào KTV.
+- Trả 3 trường này trong chi tiết đơn và trong giao dịch ví KTV. App hiện tự tính **tạm tính** theo
+  `features/finance/commission.ts` — khi BE trả trường thật thì app chuyển sang hiển thị số của BE.
+- Xuất hoá đơn GTGT cho phần phí nền tảng; khấu trừ thuế KTV theo NĐ 117/2025 là dòng riêng.
+
+### 2. Ký quỹ đơn tiền mặt (40% giá trị đơn)
+- `POST /bookings/{id}/accept` với đơn `PaymentMethod.Cash`: nếu `ví KTV < 40% giá đơn` → trả 400
+  với thông báo tiếng Việt. Nếu đủ: **tạm giữ** (hold) 33% phí nền tảng ngay trong cùng transaction nhận đơn.
+- Đơn huỷ trước khi KTV xuất phát → hoàn phần tạm giữ. Đơn hoàn thành → chuyển tạm giữ thành phí chính thức.
+- KTV nạp ký quỹ: app gọi `POST /payment/topup` (VNPay) từ ví KTV — BE cần cho phép vai KTV gọi endpoint này.
+- Đơn trả trước (PayOS/VNPay/Ví): không cần ký quỹ; khi hoàn thành chia `workerNet` vào ví KTV.
+
+### 3. Không lộ số điện thoại, gọi qua ứng dụng
+- **Ngừng trả** `customerPhone`, `workerPhone`, `worker.phone` trong mọi API đơn/chat cho phía đối tác
+  (app đã ẩn nhưng dữ liệu vẫn nằm trong phản hồi API).
+- Lọc tin nhắn phía máy chủ ở hub chat: chặn chuỗi ≥ 9 chữ số và từ khoá Zalo/Facebook/Telegram…
+  (app đã chặn phía client trong `features/contact/in-app-contact.ts`, có thể vượt qua).
+- Gọi thoại trong app — đề xuất Stringee (nhà cung cấp VN, có SDK React Native, gọi app-to-app và
+  gọi qua số ẩn):
+  - `POST /calls/token` → access token Stringee cho user hiện tại (ký bằng API secret ở máy chủ).
+  - `POST /bookings/{id}/call` → kiểm tra người gọi là khách/KTV của đơn, đơn đang ở Confirmed–InProgress
+    hoặc ≤ 2 giờ sau Completed; trả `calleeUserId` (không trả số điện thoại).
+  - Lưu nhật ký cuộc gọi (thời điểm, thời lượng) để xử lý tranh chấp. Bật cờ `FEATURE_IN_APP_CALL` khi xong.
+
+### 4. Đổi mã ứng dụng sang `vn.tayzen.app`
+- **Google Sign-In:** tạo OAuth client mới cho iOS (bundle `vn.tayzen.app`) và Android (package
+  `vn.tayzen.app` + SHA-1 của khoá ký EAS), cập nhật `GOOGLE_IOS_CLIENT_ID` trong `eas.json`;
+  backend thêm client ID mới vào danh sách audience hợp lệ khi xác minh idToken.
+- Slug EAS giữ `fixy-app` (gắn với projectId), không ảnh hưởng người dùng. Scheme mới `tayzen`, giữ `fixy-app` để link cũ vẫn mở app.
+- Nếu backend tạo returnUrl cổng thanh toán dạng deep link thì chuyển sang `tayzen://`.
+
+### 5. Đổi tên danh mục dịch vụ trong dữ liệu backend
+CEO chốt hạn chế tối đa chữ "massage" (thuế TTĐB 30% xét theo bản chất dịch vụ; tên gọi chỉ giảm rủi ro
+nhận diện, không thay đổi bản chất). Tránh cả "trị liệu", "phục hồi chức năng", "vật lý trị liệu" (sát hành nghề y).
+Đổi `name` danh mục: "Chăm sóc vai gáy", "Chăm sóc lưng", "Chăm sóc chân", "Chăm sóc da mặt", "Gội đầu dưỡng sinh".
+App tạm map tên cũ qua `utils/category-label.ts`. Luật sư cần chốt cách tách gói có/không xoa bóp và hoá đơn riêng.

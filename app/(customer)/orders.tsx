@@ -18,6 +18,7 @@ import { Booking, BookingStatus, getMyBookings } from '@/services/api/bookings';
 import { formatDateTime } from '@/utils/date';
 import { fetchCategories } from '@/services/api/categories';
 import { formatCurrency } from '@/utils/format';
+import { displayCategoryName } from '@/utils/category-label';
 
 const STATUS_MAP: Record<
   number,
@@ -106,7 +107,7 @@ const CATEGORIES_INFO: Record<
   { label: string; icon: React.ComponentProps<typeof MaterialIcons>['name']; color: string }
 > = {
   facial: { label: 'Chăm sóc da mặt', icon: 'face', color: '#0F382C' },
-  massage: { label: 'Massage trị liệu thư giãn', icon: 'spa', color: '#E11D48' },
+  massage: { label: 'Chăm sóc giảm mỏi', icon: 'spa', color: '#E11D48' },
   body: { label: 'Tẩy tế bào chết toàn thân', icon: 'self-improvement', color: '#D97706' },
   combo: { label: 'Gói Spa Chăm sóc toàn diện', icon: 'auto-awesome', color: '#7C3AED' },
 };
@@ -148,7 +149,7 @@ export default function CustomerOrdersScreen() {
     const code = category?.code || item.categoryId;
     const mappedInfo = CATEGORIES_INFO[code];
     const catInfo = {
-      label: category?.name || mappedInfo?.label || 'Dịch vụ Spa',
+      label: displayCategoryName(category?.name) || mappedInfo?.label || 'Dịch vụ Spa',
       icon: mappedInfo?.icon || 'spa',
       color: mappedInfo?.color || '#FF8228',
     };

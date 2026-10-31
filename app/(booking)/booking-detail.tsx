@@ -18,6 +18,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SvgCssUri } from 'react-native-svg/css';
 import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signalr';
 
+import { startInAppCall } from '@/features/contact/in-app-contact';
 import VNPayWebView from '@/components/VNPayWebView';
 import { SosButton } from '@/components/safety/sos-button';
 import { CANCELLATION_POLICY, FEATURE_CANCELLATION_FEES } from '@/features/safety/safety-config';
@@ -43,6 +44,7 @@ import { getBookingReview, Review } from '@/services/api/reviews';
 import { getMediaUrl } from '@/services/api/media';
 import { fetchCategories } from '@/services/api/categories';
 import { formatDateTime, formatDateOnly, formatTime } from '@/utils/date';
+import { displayCategoryName } from '@/utils/category-label';
 import { formatCurrency } from '@/utils/format';
 import {
   EligibleVoucher,
@@ -115,9 +117,9 @@ function getCategoryLabel(categoryId: string): string {
     case 'facial':
       return 'Chăm sóc da mặt';
     case 'massage':
-      return 'Massage trị liệu thư giãn';
+      return 'Chăm sóc giảm mỏi';
     case 'spa':
-      return 'Spa trị liệu';
+      return 'Chăm sóc spa';
     default:
       return 'Dịch vụ Spa';
   }
@@ -153,7 +155,7 @@ export default function BookingDetailScreen() {
   const category = categories.find(
     (c) => c.id === booking?.categoryId || c.code === booking?.categoryId
   );
-  const categoryName = category?.name || (booking ? getCategoryLabel(booking.categoryId) : '');
+  const categoryName = displayCategoryName(category?.name) || (booking ? getCategoryLabel(booking.categoryId) : '');
 
   const { data: tracking = null } = useQuery<BookingTracking | null>({
     queryKey: ['bookingTracking', bookingId],
@@ -679,7 +681,6 @@ export default function BookingDetailScreen() {
                       bookingId: booking.id,
                       status: String(booking.status),
                       workerName: booking.worker?.fullName || booking.workerName || '',
-                      workerPhone: booking.worker?.phone || booking.workerPhone || '',
                       workerRating: String(booking.worker?.rating || '--'),
                       categoryName: categoryName,
                       workerLat: tracking.workerLat ? String(tracking.workerLat) : '',
@@ -724,9 +725,6 @@ export default function BookingDetailScreen() {
                     <Text style={styles.ratingVal}>
                       {booking.worker?.rating?.toFixed(1) || '--'}
                     </Text>
-                    <Text style={styles.workerPhone}>
-                      • SĐT: {booking.worker?.phone || booking.workerPhone || 'Đang cập nhật'}
-                    </Text>
                   </View>
                 </View>
               </View>
@@ -736,10 +734,10 @@ export default function BookingDetailScreen() {
                   <Pressable
                     style={[styles.actionBtn, styles.actionBtnCall]}
                     onPress={() =>
-                      Alert.alert(
-                        'Gọi KTV',
-                        `Đang kết nối cuộc gọi tới SĐT: ${booking.worker?.phone || booking.workerPhone || 'Đang cập nhật'}`
-                      )
+                      startInAppCall({
+                        partnerLabel: 'KTV',
+                        onOpenChat: () => router.push(`/booking-chat?bookingId=${booking.id}` as any),
+                      })
                     }>
                     <MaterialIcons name="phone" size={18} color="#0F382C" />
                     <Text style={styles.actionBtnTextCall}>Gọi KTV</Text>

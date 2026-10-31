@@ -25,6 +25,7 @@ import {
   formatVoucherIneligibleReason,
   getVoucherDiscount,
 } from '@/services/api/voucher-utils';
+import { displayCategoryName } from '@/utils/category-label';
 import { formatCurrency, formatFullAddress } from '@/utils/format';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -83,8 +84,9 @@ export default function BookingCheckoutScreen() {
   const [showVoucherModal, setShowVoucherModal] = React.useState(false);
   const [selectedAddress, setSelectedAddress] = React.useState<Address | null>(null);
   const [showAddressModal, setShowAddressModal] = React.useState(false);
+  // CEO chốt 31/10: ưu tiên thanh toán trước (PayOS); tiền mặt vẫn chọn được, KTV phải có ký quỹ.
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<number>(
-    PaymentMethod.Cash
+    PaymentMethod.PayOS
   );
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const [showPayOSWebView, setShowPayOSWebView] = React.useState(false);
@@ -153,6 +155,14 @@ export default function BookingCheckoutScreen() {
     queryFn: fetchPaymentMethodsApi,
   });
 
+  // Nếu backend không bật PayOS thì chọn phương thức trả trước đầu tiên có sẵn.
+  React.useEffect(() => {
+    if (paymentMethods.length === 0) return;
+    if (paymentMethods.some((m) => m.value === selectedPaymentMethod)) return;
+    const prepaid = paymentMethods.find((m) => m.value !== PaymentMethod.Cash);
+    setSelectedPaymentMethod((prepaid ?? paymentMethods[0]).value);
+  }, [paymentMethods, selectedPaymentMethod]);
+
   // Fetch draft details via useQuery if activeDraftId parameter is present
   const { data: draft = null } = useQuery<BookingDraft | null>({
     queryKey: ['draft', activeDraftId],
@@ -167,7 +177,7 @@ export default function BookingCheckoutScreen() {
 
   const activeCategoryId = paramCategoryId || draft?.categoryId;
   const category = categories.find((c) => c.id === activeCategoryId || c.code === activeCategoryId);
-  const categoryName = category?.name || 'Chăm sóc Spa';
+  const categoryName = displayCategoryName(category?.name) || 'Chăm sóc Spa';
 
   // Fetch worker details via dependent useQuery
   const activeWorkerProfileId = paramWorkerProfileId || draft?.workerProfileId;

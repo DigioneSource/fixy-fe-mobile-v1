@@ -3,7 +3,10 @@
     "name": "TAYZEN",
     "slug": "fixy-app",
     "version": "1.0.0",
-    "scheme": "fixy-app",
+    "scheme": [
+      "tayzen",
+      "fixy-app"
+    ],
     "platforms": [
       "ios",
       "android"
@@ -53,14 +56,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fixy.app"
+      "bundleIdentifier": "vn.tayzen.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B4824"
       },
-      "package": "com.fixy.app",
+      "package": "vn.tayzen.app",
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
       ]

@@ -24,6 +24,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
+  CONTACT_BLOCKED_MESSAGE,
+  containsContactInfo,
+  startInAppCall,
+} from '@/features/contact/in-app-contact';
+import {
   Booking,
   BookingChatMessage,
   BookingStatus,
@@ -336,7 +341,6 @@ export default function BookingChatScreen() {
       const rawWorkerAvatar = booking.workerAvatarUrl || (booking as any).WorkerAvatarUrl || booking.worker?.avatarUrl;
       return {
         name: booking.worker?.fullName || booking.workerName || 'Kỹ thuật viên',
-        phone: booking.worker?.phone || booking.workerPhone || '',
         avatar: rawWorkerAvatar
           ? rawWorkerAvatar.startsWith('http')
             ? rawWorkerAvatar
@@ -347,7 +351,6 @@ export default function BookingChatScreen() {
       const rawCustAvatar = booking.customerAvatarUrl || (booking as any).CustomerAvatarUrl;
       return {
         name: booking.customerName || 'Khách hàng',
-        phone: booking.customerPhone || '',
         avatar: rawCustAvatar
           ? rawCustAvatar.startsWith('http')
             ? rawCustAvatar
@@ -460,6 +463,10 @@ export default function BookingChatScreen() {
   const handleSendText = async () => {
     const text = inputText.trim();
     if (!text || !currentBookingId) return;
+    if (containsContactInfo(text)) {
+      Alert.alert('Không gửi được tin nhắn', CONTACT_BLOCKED_MESSAGE);
+      return;
+    }
 
     setInputText('');
     await sendTextMessage(text);
@@ -496,13 +503,8 @@ export default function BookingChatScreen() {
   };
 
   const handleCall = () => {
-    if (partnerInfo.phone) {
-      Linking.openURL(`tel:${partnerInfo.phone}`).catch(() => {
-        Alert.alert('Lỗi', 'Không thể khởi chạy ứng dụng gọi điện.');
-      });
-    } else {
-      Alert.alert('Thông tin cuộc gọi', 'Số điện thoại của đối phương chưa được cập nhật.');
-    }
+    // Đang ở màn chat nên "Nhắn tin" chỉ cần đóng hộp thoại.
+    startInAppCall({ partnerLabel: partnerInfo.name, onOpenChat: () => undefined });
   };
 
   const renderMessageItem = ({ item }: { item: ChatMessage }) => {

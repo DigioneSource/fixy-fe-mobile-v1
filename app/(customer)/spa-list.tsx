@@ -20,6 +20,7 @@ import {
   SpaPartner,
   SearchSpaPartnerParams,
 } from '@/services/api/spa-partners';
+import { displayCategoryName } from '@/utils/category-label';
 
 function getSpaFallbackThumbnail(_index: number): string | null {
   return null;
@@ -252,7 +253,7 @@ export default function SpaListScreen() {
 
           <View style={styles.headerCenterContent}>
             <Text style={styles.headerTitle} numberOfLines={1}>
-              {categoryName ? `Spa: ${categoryName}` : 'Địa Điểm Spa'}
+              {categoryName ? `Spa: ${displayCategoryName(categoryName)}` : 'Địa Điểm Spa'}
             </Text>
             <Text style={styles.headerSubtitle}>
               {spaPartners.length} spa uy tín được xác thực

@@ -39,6 +39,7 @@ import {
 import { updateUserProfile } from '@/services/api/user';
 import { useAuthStore } from '@/store/store';
 import { formatCurrency, formatToIsoDateTime } from '@/utils/format';
+import { displayCategoryName } from '@/utils/category-label';
 
 type PickerType = 'province' | 'ward';
 type AddressPickerOption = { name: string; code?: number };
@@ -1002,7 +1003,7 @@ export default function WorkerSetupScreen() {
             </Text>
 
             <Text style={styles.sectionTitle}>Dịch vụ cung cấp</Text>
-            <Text style={styles.subLabel}>Chọn các dịch vụ Spa & Massage bạn cung cấp và thiết lập gói giá:</Text>
+            <Text style={styles.subLabel}>Chọn các dịch vụ chăm sóc bạn cung cấp và thiết lập gói giá:</Text>
 
             {isLoadingCategories ? (
               <ActivityIndicator size="small" color="#0F382C" />
@@ -1019,7 +1020,7 @@ export default function WorkerSetupScreen() {
                         size={22}
                         color={isSelected ? '#0F382C' : '#818A91'}
                       />
-                      <Text style={styles.catName}>{cat.name}</Text>
+                      <Text style={styles.catName}>{displayCategoryName(cat.name)}</Text>
                     </Pressable>
 
                     {isSelected && (

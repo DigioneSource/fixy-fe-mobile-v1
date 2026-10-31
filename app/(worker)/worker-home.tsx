@@ -14,6 +14,7 @@ import { getUserProfile } from '@/services/api/user';
 import { getWorkerCategoryIcon } from '@/utils/category-ui';
 import { formatCurrency } from '@/utils/format';
 import { getUnreadCount } from '@/services/api/notifications';
+import { displayCategoryName } from '@/utils/category-label';
 
 export default function WorkerHomeScreen() {
   const insets = useSafeAreaInsets();
@@ -284,7 +285,7 @@ export default function WorkerHomeScreen() {
                           <View style={styles.jobDetails}>
                             <View style={styles.jobTitleRow}>
                               <Text style={styles.jobTitle} numberOfLines={1}>
-                                {job.description || category?.name || 'Yêu cầu dịch vụ Spa'}
+                                {job.description || displayCategoryName(category?.name) || 'Yêu cầu dịch vụ Spa'}
                               </Text>
                               <Text style={styles.jobPrice}>
                                 {formatCurrency(job.finalPrice || job.finalAmount || job.estimatedAmount || job.estimatedPrice || 0)}

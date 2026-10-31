@@ -27,6 +27,7 @@ import { fetchCategories } from '@/services/api/categories';
 import { getMediaUrl } from '@/services/api/media';
 import { useAuthStore } from '@/store/store';
 import { formatTime, formatDateTime } from '@/utils/date';
+import { displayCategoryName } from '@/utils/category-label';
 
 function parseJwt(token: string) {
   try {
@@ -114,7 +115,7 @@ export default function ChatListScreen() {
               const category = categories.find(
                 (c) => c.id === b.categoryId || c.code === b.categoryId
               );
-              const categoryName = category?.name || 'Dịch vụ Spa';
+              const categoryName = displayCategoryName(category?.name) || 'Dịch vụ Spa';
 
               // Resolve partner details
               let partnerName = 'Kỹ thuật viên';

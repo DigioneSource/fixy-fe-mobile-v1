@@ -22,6 +22,18 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 
+import { startInAppCall } from '@/features/contact/in-app-contact';
+import {
+  calcCommission,
+  formatPercent,
+  PLATFORM_FEE_RATE,
+  PLATFORM_FEE_TOTAL_RATE,
+  PLATFORM_FEE_VAT_RATE,
+  requiredCashDeposit,
+  WORKER_CASH_DEPOSIT_RATE,
+} from '@/features/finance/commission';
+import { WalletTopupModal } from '@/components/wallet/wallet-topup-modal';
+import { getWalletOverview, WalletOverview } from '@/services/api/wallet';
 import {
   Booking,
   BookingStatus,
@@ -54,6 +66,7 @@ import { getApiErrorMessage } from '@/services/api/client';
 import { fetchCategories } from '@/services/api/categories';
 import { getBookingReview, replyToReview, Review } from '@/services/api/reviews';
 import { formatDateTime, formatDateOnly } from '@/utils/date';
+import { displayCategoryName } from '@/utils/category-label';
 import { formatCurrency } from '@/utils/format';
 
 // Map status enum values to string keys and styles
@@ -150,6 +163,43 @@ export default function WorkerJobDetailScreen() {
     queryFn: () => getBookingDetails(id || ''),
     enabled: !!id,
   });
+
+  const isIncomingJob =
+    job?.status === BookingStatus.Pending || job?.status === BookingStatus.Matching;
+
+  // Ví KTV — dùng để kiểm tra ký quỹ trước khi nhận đơn tiền mặt
+  const { data: wallet = null, refetch: refetchWallet } = useQuery<WalletOverview | null>({
+    queryKey: ['wallet'],
+    queryFn: getWalletOverview,
+    enabled: !!job && isIncomingJob,
+  });
+  const [topupOpen, setTopupOpen] = React.useState(false);
+
+  const jobPrice = Number(
+    (job as any)?.estimatedPrice ??
+      (job as any)?.estimatedAmount ??
+      job?.finalAmount ??
+      job?.finalPrice ??
+      0
+  );
+  const isCashJob = isCashPayment(job);
+  const commission = calcCommission(jobPrice);
+  const cashDepositRequired = requiredCashDeposit(jobPrice);
+
+  const handleAccept = () => {
+    if (isCashJob && wallet && wallet.balance < cashDepositRequired) {
+      Alert.alert(
+        'Chưa đủ ký quỹ',
+        `Đơn thanh toán tiền mặt cần ví có tối thiểu ${formatCurrency(cashDepositRequired)} (${formatPercent(WORKER_CASH_DEPOSIT_RATE)} giá trị đơn) để TAYZEN tạm thu phí nền tảng. Số dư hiện tại: ${formatCurrency(wallet.balance)}.`,
+        [
+          { text: 'Để sau', style: 'cancel' },
+          { text: 'Nạp ký quỹ', onPress: () => setTopupOpen(true) },
+        ]
+      );
+      return;
+    }
+    runLocked(() => acceptMutation.mutate());
+  };
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery({
     queryKey: ['categories'],
@@ -296,11 +346,11 @@ export default function WorkerJobDetailScreen() {
 
   const category = categories.find((c) => c.id === job?.categoryId || c.code === job?.categoryId);
   const categoryName =
-    category?.name ||
+    displayCategoryName(category?.name) ||
     (job?.categoryId === 'facial'
       ? 'Chăm sóc da mặt'
       : job?.categoryId === 'massage'
-        ? 'Massage trị liệu thư giãn'
+        ? 'Chăm sóc giảm mỏi'
         : job?.categoryId === 'body'
           ? 'Tẩy tế bào chết toàn thân'
           : job?.categoryId === 'combo'
@@ -724,7 +774,6 @@ export default function WorkerJobDetailScreen() {
             </View>
             <View style={styles.customerDetails}>
               <Text style={styles.customerName}>{job.customerName || 'Khách hàng TAYZEN'}</Text>
-              <Text style={styles.customerPhone}>SĐT: {job.customerPhone || 'Chưa cập nhật'}</Text>
             </View>
           </View>
 
@@ -732,16 +781,12 @@ export default function WorkerJobDetailScreen() {
             <View style={styles.actionButtonsRow}>
               <Pressable
                 style={[styles.actionBtn, styles.actionBtnCall]}
-                onPress={() => {
-                  const phone = job.customerPhone || '';
-                  if (phone) {
-                    Linking.openURL(`tel:${phone}`).catch(() => {
-                      Alert.alert('Lỗi', 'Không thể khởi chạy ứng dụng gọi điện.');
-                    });
-                  } else {
-                    Alert.alert('Lỗi', 'Chưa có thông tin số điện thoại.');
-                  }
-                }}>
+                onPress={() =>
+                  startInAppCall({
+                    partnerLabel: 'khách hàng',
+                    onOpenChat: () => router.push(`/booking-chat?bookingId=${job.id}` as any),
+                  })
+                }>
                 <MaterialIcons name="phone" size={18} color="#0F382C" />
                 <Text style={styles.actionBtnTextCall}>Gọi khách</Text>
               </Pressable>
@@ -909,6 +954,36 @@ export default function WorkerJobDetailScreen() {
                       {formatCurrency(finPrice)}
                     </Text>
                   </View>
+                  {(() => {
+                    const c = calcCommission(origPrice);
+                    return (
+                      <>
+                        <View style={styles.invoiceRow}>
+                          <Text style={styles.invoiceLabel}>
+                            Phí nền tảng {formatPercent(PLATFORM_FEE_RATE)}
+                          </Text>
+                          <Text style={styles.invoiceVal}>-{formatCurrency(c.fee)}</Text>
+                        </View>
+                        <View style={styles.invoiceRow}>
+                          <Text style={styles.invoiceLabel}>
+                            VAT {formatPercent(PLATFORM_FEE_VAT_RATE)} trên phí nền tảng
+                          </Text>
+                          <Text style={styles.invoiceVal}>-{formatCurrency(c.vat)}</Text>
+                        </View>
+                        <View style={styles.invoiceRow}>
+                          <Text style={[styles.invoiceLabel, { fontFamily: 'Montserrat_700Bold' }]}>
+                            KTV thực nhận (tạm tính)
+                          </Text>
+                          <Text style={[styles.invoiceVal, { fontFamily: 'Montserrat_700Bold', color: '#0F382C' }]}>
+                            {formatCurrency(c.workerNet)}
+                          </Text>
+                        </View>
+                        {voucherDiscount > 0 && (
+                          <Text style={styles.invoiceNote}>Voucher do TAYZEN chịu, không trừ vào thu nhập KTV.</Text>
+                        )}
+                      </>
+                    );
+                  })()}
                 </>
               );
             })()}
@@ -1050,7 +1125,20 @@ export default function WorkerJobDetailScreen() {
             <Text style={styles.reportCustomerText}>Báo cáo khách hàng vi phạm</Text>
           </Pressable>
         )}
-        {(job.status === BookingStatus.Pending || job.status === BookingStatus.Matching) && (
+        {isIncomingJob && jobPrice > 0 && (
+          <View style={styles.earningHint}>
+            <Text style={styles.earningHintText}>
+              Bạn nhận (tạm tính): <Text style={styles.earningHintStrong}>{formatCurrency(commission.workerNet)}</Text>{' '}
+              sau phí nền tảng {formatPercent(PLATFORM_FEE_TOTAL_RATE)} (đã gồm VAT).
+            </Text>
+            {isCashJob && (
+              <Text style={styles.earningHintText}>
+                Đơn tiền mặt: ví cần tối thiểu {formatCurrency(cashDepositRequired)} ký quỹ.
+              </Text>
+            )}
+          </View>
+        )}
+        {isIncomingJob && (
           <View style={styles.incomingActions}>
             <Pressable style={styles.declineBtn} onPress={() => setDeclineModalOpen(true)}>
               <Text style={styles.declineBtnText}>Từ chối</Text>
@@ -1060,7 +1148,7 @@ export default function WorkerJobDetailScreen() {
             </Pressable>
             <Pressable
               style={styles.acceptBtn}
-              onPress={() => runLocked(() => acceptMutation.mutate())}
+              onPress={handleAccept}
               disabled={acceptMutation.isPending}>
               {acceptMutation.isPending ? (
                 <ActivityIndicator size="small" color="#ffffff" />
@@ -1126,6 +1214,16 @@ export default function WorkerJobDetailScreen() {
         )}
       </View>
 
+      <WalletTopupModal
+        visible={topupOpen}
+        onClose={() => setTopupOpen(false)}
+        onDone={() => {
+          refetchWallet();
+        }}
+        title="Nạp ký quỹ"
+        note={`Đơn tiền mặt cần ví có tối thiểu ${formatCurrency(cashDepositRequired)}. Khi nhận đơn, TAYZEN tạm thu phí nền tảng ${formatPercent(PLATFORM_FEE_TOTAL_RATE)} từ ví.`}
+        suggestedAmount={Math.max(0, cashDepositRequired - (wallet?.balance ?? 0))}
+      />
       <ReportCustomerModal
         bookingId={job.id}
         visible={reportCustomerOpen}
@@ -2005,4 +2103,43 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
+  earningHint: {
+    gap: 4,
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: '#E8F0EC',
+  },
+  earningHintText: {
+    color: '#344054',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  earningHintStrong: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_700Bold',
+  },
+  invoiceNote: {
+    marginTop: 6,
+    color: '#667085',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 12,
+  },
 });
+
+// Đơn không rõ phương thức coi như tiền mặt để không bỏ sót ký quỹ (backend vẫn là nơi quyết định).
+function isCashPayment(job: Booking | null) {
+  if (!job) return false;
+  const method =
+    job.paymentMethod ??
+    (job as any).PaymentMethod ??
+    (job as any).paymentType ??
+    job.paymentMethodName;
+  if (typeof method === 'number') return method === PaymentMethod.Cash;
+  if (typeof method === 'string') {
+    const lower = method.toLowerCase();
+    return lower.includes('cash') || lower.includes('tien mat') || lower.includes('tiền mặt');
+  }
+  return true;
+}

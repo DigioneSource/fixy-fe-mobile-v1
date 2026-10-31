@@ -21,6 +21,7 @@ import {
   SpaPartnerServiceDto,
 } from '@/services/api/spa-partners';
 import { formatCurrency } from '@/utils/format';
+import { displayCategoryName } from '@/utils/category-label';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DEFAULT_DETAIL_COVER: string | null = null;
@@ -208,7 +209,7 @@ export default function SpaDetailScreen() {
             <Text style={styles.cardSectionTitle}>💆‍♀️ Bảng Dịch Vụ</Text>
             {Object.entries(servicesByCategory).map(([catName, services]) => (
               <View key={catName} style={styles.serviceCategoryGroup}>
-                <Text style={styles.serviceCategoryLabel}>{catName}</Text>
+                <Text style={styles.serviceCategoryLabel}>{displayCategoryName(catName)}</Text>
                 {services.map((svc) => (
                   <View key={svc.id} style={styles.serviceItemRow}>
                     <View style={styles.serviceLeft}>

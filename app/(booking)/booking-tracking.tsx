@@ -10,6 +10,7 @@ import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signal
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { startInAppCall } from '@/features/contact/in-app-contact';
 import { SosButton } from '@/components/safety/sos-button';
 import {
   BookingStatus,
@@ -17,6 +18,7 @@ import {
   getBookingTracking,
   isTerminalBookingStatus,
 } from '@/services/api/bookings';
+import { displayCategoryName } from '@/utils/category-label';
 import { getDistanceAndDuration, getDirections, GOONG_MAPTILES_API_KEY, GOONG_API_KEY } from '@/services/api/goong';
 import { useAuthStore } from '@/store/store';
 import { getApiBaseUrl } from '@/config/env';
@@ -413,11 +415,7 @@ export default function BookingTrackingScreen() {
   };
 
   const handleCallWorker = () => {
-    if (params.workerPhone) {
-      Linking.openURL(`tel:${params.workerPhone}`);
-    } else {
-      Alert.alert('Thông báo', 'Không có số điện thoại của KTV.');
-    }
+    startInAppCall({ partnerLabel: 'KTV', onOpenChat: handleChatWorker });
   };
 
   const handleChatWorker = () => {
@@ -471,7 +469,7 @@ export default function BookingTrackingScreen() {
           </View>
           <View style={[styles.detailRow, styles.detailRowBorder]}>
             <Text style={styles.detailLabel}>Dịch vụ</Text>
-            <Text style={styles.detailValuePrimary}>{params.categoryName ?? 'Dịch vụ Spa'}</Text>
+            <Text style={styles.detailValuePrimary}>{displayCategoryName(params.categoryName) || 'Dịch vụ Spa'}</Text>
           </View>
           <View style={styles.etaRow}>
             <View style={styles.etaIcon}>

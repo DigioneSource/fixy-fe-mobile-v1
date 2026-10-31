@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fetchSpaServiceCategories, SpaServiceCategory } from '@/services/api/spa-partners';
+import { displayCategoryName } from '@/utils/category-label';
 
 // Curated theme palette, icons & tags for Spa categories
 const CATEGORY_THEMES: Record<
@@ -32,7 +33,7 @@ const CATEGORY_THEMES: Record<
     family: 'MaterialIcons',
     iconColor: '#0F382C',
     iconBg: '#E6F0EB',
-    badgeText: 'Thư giãn & Phục hồi',
+    badgeText: 'Thư giãn & Thư thái',
   },
   'cham-soc-da': {
     iconName: 'sparkles',
@@ -46,7 +47,7 @@ const CATEGORY_THEMES: Record<
     family: 'FontAwesome5',
     iconColor: '#80491E',
     iconBg: '#F5EBE1',
-    badgeText: 'Trị liệu Cổ Vai Gáy',
+    badgeText: 'Chăm sóc Vai Gáy',
   },
   nail: {
     iconName: 'hand-sparkles',
@@ -115,7 +116,7 @@ export default function SpaServicesScreen() {
       pathname: '/(customer)/spa-list',
       params: {
         categoryId: category.id,
-        categoryName: category.name,
+        categoryName: displayCategoryName(category.name),
       },
     } as any);
   };
@@ -131,6 +132,7 @@ export default function SpaServicesScreen() {
     return categories.filter((cat) => {
       const matchesSearch =
         cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        displayCategoryName(cat.name).toLowerCase().includes(searchQuery.toLowerCase()) ||
         (cat.description && cat.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
       if (!matchesSearch) return false;
@@ -176,7 +178,7 @@ export default function SpaServicesScreen() {
           <MaterialIcons name="search" size={22} color="#818A91" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Tìm kiếm dịch vụ spa, massage, trị liệu..."
+            placeholder="Tìm kiếm dịch vụ chăm sóc, làm đẹp..."
             placeholderTextColor="#9EA5AC"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -229,7 +231,7 @@ export default function SpaServicesScreen() {
 
             <Text style={styles.bannerTitle}>Không Gian Spa Đẳng Cấp</Text>
             <Text style={styles.bannerSubtitle}>
-              Trị liệu thư giãn chuẩn spa, KTV đã xác minh, đến tận nhà.
+              Chăm sóc thư giãn chuẩn spa, KTV đã xác minh, đến tận nhà.
             </Text>
 
             {/* Quick Stats Bar */}
@@ -389,7 +391,7 @@ export default function SpaServicesScreen() {
                       <View style={styles.cardCenterContent}>
                         <View style={styles.cardTitleRow}>
                           <Text style={styles.categoryNameText} numberOfLines={1}>
-                            {cat.name}
+                            {displayCategoryName(cat.name)}
                           </Text>
                           <View style={[styles.badgePill, { backgroundColor: theme.iconBg }]}>
                             <Text style={[styles.badgePillText, { color: theme.iconColor }]}>
@@ -452,7 +454,7 @@ export default function SpaServicesScreen() {
                       </View>
 
                       <Text style={styles.gridCategoryName} numberOfLines={1}>
-                        {cat.name}
+                        {displayCategoryName(cat.name)}
                       </Text>
                       <Text style={styles.gridBadgeText} numberOfLines={1}>
                         {theme.badgeText}

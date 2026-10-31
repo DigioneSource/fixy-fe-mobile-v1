@@ -21,6 +21,7 @@ import { formatDateTime, formatDateOnly } from '@/utils/date';
 import { formatCurrency } from '@/utils/format';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocationStore } from '@/store/store';
+import { displayCategoryName } from '@/utils/category-label';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -244,7 +245,7 @@ export default function WorkerDetailScreen() {
 
     return worker.services.map((srv, index) => {
       const matchedCat = categories.find((c) => c.id === srv.categoryId);
-      const name = matchedCat?.name || `Dịch vụ ${index + 1}`;
+      const name = displayCategoryName(matchedCat?.name) || `Dịch vụ ${index + 1}`;
 
       const rawOptions = (srv.options || []).filter((opt: any) => opt.isActive !== false);
       const sortedOptions = [...rawOptions].sort((a: any, b: any) => a.durationMinutes - b.durationMinutes);
