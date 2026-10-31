@@ -167,7 +167,7 @@ export default function WorkerJobDetailScreen() {
   const isIncomingJob =
     job?.status === BookingStatus.Pending || job?.status === BookingStatus.Matching;
 
-  // Ví KTV — dùng để kiểm tra ký quỹ trước khi nhận đơn tiền mặt
+  // Ví KTV — dùng để kiểm tra số dư bảo đảm trước khi nhận đơn tiền mặt
   const { data: wallet = null, refetch: refetchWallet } = useQuery<WalletOverview | null>({
     queryKey: ['wallet'],
     queryFn: getWalletOverview,
@@ -189,11 +189,11 @@ export default function WorkerJobDetailScreen() {
   const handleAccept = () => {
     if (isCashJob && wallet && wallet.balance < cashDepositRequired) {
       Alert.alert(
-        'Chưa đủ ký quỹ',
+        'Chưa đủ số dư bảo đảm',
         `Đơn thanh toán tiền mặt cần ví có tối thiểu ${formatCurrency(cashDepositRequired)} (${formatPercent(WORKER_CASH_DEPOSIT_RATE)} giá trị đơn) để TAYZEN tạm thu phí nền tảng. Số dư hiện tại: ${formatCurrency(wallet.balance)}.`,
         [
           { text: 'Để sau', style: 'cancel' },
-          { text: 'Nạp ký quỹ', onPress: () => setTopupOpen(true) },
+          { text: 'Nạp số dư bảo đảm', onPress: () => setTopupOpen(true) },
         ]
       );
       return;
@@ -1133,7 +1133,7 @@ export default function WorkerJobDetailScreen() {
             </Text>
             {isCashJob && (
               <Text style={styles.earningHintText}>
-                Đơn tiền mặt: ví cần tối thiểu {formatCurrency(cashDepositRequired)} ký quỹ.
+                Đơn tiền mặt: ví cần tối thiểu {formatCurrency(cashDepositRequired)} số dư bảo đảm (phí + thuế khấu trừ).
               </Text>
             )}
           </View>
@@ -1220,7 +1220,7 @@ export default function WorkerJobDetailScreen() {
         onDone={() => {
           refetchWallet();
         }}
-        title="Nạp ký quỹ"
+        title="Nạp số dư bảo đảm"
         note={`Đơn tiền mặt cần ví có tối thiểu ${formatCurrency(cashDepositRequired)}. Khi nhận đơn, TAYZEN tạm thu phí nền tảng ${formatPercent(PLATFORM_FEE_TOTAL_RATE)} từ ví.`}
         suggestedAmount={Math.max(0, cashDepositRequired - (wallet?.balance ?? 0))}
       />
@@ -2128,7 +2128,7 @@ const styles = StyleSheet.create({
   },
 });
 
-// Đơn không rõ phương thức coi như tiền mặt để không bỏ sót ký quỹ (backend vẫn là nơi quyết định).
+// Đơn không rõ phương thức coi như tiền mặt để không bỏ sót số dư bảo đảm (backend vẫn là nơi quyết định).
 function isCashPayment(job: Booking | null) {
   if (!job) return false;
   const method =

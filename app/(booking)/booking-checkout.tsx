@@ -84,7 +84,7 @@ export default function BookingCheckoutScreen() {
   const [showVoucherModal, setShowVoucherModal] = React.useState(false);
   const [selectedAddress, setSelectedAddress] = React.useState<Address | null>(null);
   const [showAddressModal, setShowAddressModal] = React.useState(false);
-  // CEO chốt 31/10: ưu tiên thanh toán trước (PayOS); tiền mặt vẫn chọn được, KTV phải có ký quỹ.
+  // CEO chốt 31/10: ưu tiên thanh toán trước (PayOS); tiền mặt vẫn chọn được, KTV phải có số dư bảo đảm phí.
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<number>(
     PaymentMethod.PayOS
   );
@@ -647,7 +647,7 @@ export default function BookingCheckoutScreen() {
             <View style={styles.autoMatchRow}>
               <MaterialIcons name="autorenew" size={20} color="#0F382C" />
               <Text style={styles.autoMatchText}>
-                Ghép kỹ thuật viên uy tín tự động gần bạn nhất
+                Gửi yêu cầu tới các KTV gần bạn đang nhận việc, với giá KTV niêm yết
               </Text>
             </View>
           )}

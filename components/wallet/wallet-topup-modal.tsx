@@ -30,7 +30,7 @@ type WalletTopupModalProps = {
   suggestedAmount?: number;
 };
 
-// Nạp tiền vào ví qua VNPay — dùng cho ký quỹ KTV (đơn tiền mặt) và các chỗ cần nạp nhanh.
+// Nạp tiền vào ví qua VNPay — dùng cho số dư bảo đảm phí của KTV (đơn tiền mặt) và các chỗ cần nạp nhanh.
 export function WalletTopupModal({
   visible,
   onClose,

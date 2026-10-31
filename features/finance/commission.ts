@@ -1,4 +1,4 @@
-// Hoa hồng & ký quỹ KTV — CEO chốt 31/10/2026.
+// Phí dịch vụ nền tảng & số dư bảo đảm của KTV — CEO chốt 31/10/2026 (mô hình trung gian: TAYZEN thu hộ, chỉ phí là doanh thu).
 // Backend là nơi tính chính thức; app chỉ hiển thị tạm tính và chặn sớm ở phía KTV.
 
 /** Phí nền tảng chưa thuế. */
@@ -8,7 +8,10 @@ export const PLATFORM_FEE_VAT_RATE = 0.1;
 /** Tổng KTV trả nền tảng, đã gồm thuế: 30% × 1,1 = 33%. */
 export const PLATFORM_FEE_TOTAL_RATE = PLATFORM_FEE_RATE * (1 + PLATFORM_FEE_VAT_RATE);
 
-/** Đơn tiền mặt: ví KTV phải có tối thiểu 40% giá trị đơn mới được nhận (gói 500k → 200k). */
+/**
+ * Đơn tiền mặt: số dư bảo đảm tối thiểu 40% giá đơn (gói 500k → 200k)
+ * = phí nền tảng 33% (gồm VAT) + thuế GTGT 5% và TNCN 2% TAYZEN khấu trừ, nộp thay cho KTV.
+ */
 export const WORKER_CASH_DEPOSIT_RATE = 0.4;
 
 export function calcCommission(servicePrice: number) {

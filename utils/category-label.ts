@@ -34,7 +34,9 @@ export function displayCategoryName(name?: string | null): string {
   const mapped = CATEGORY_NAME_MAP[normalize(name)];
   if (mapped) return mapped;
   if (!SENSITIVE_WORD.test(name)) return name;
-  const replaced = name.replace(SENSITIVE_WORD_ALL, 'chăm sóc').replace(/chăm sóc\s+chăm sóc/gi, 'chăm sóc')
+  const replaced = name
+    .replace(SENSITIVE_WORD_ALL, 'chăm sóc')
+    .replace(/chăm sóc\s+chăm sóc/gi, 'chăm sóc')
     .replace(/\s+/g, ' ')
     .trim();
   return replaced.charAt(0).toUpperCase() + replaced.slice(1);

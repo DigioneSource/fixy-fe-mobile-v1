@@ -153,3 +153,27 @@ CEO chốt hạn chế tối đa chữ "massage" (thuế TTĐB 30% xét theo b�
 nhận diện, không thay đổi bản chất). Tránh cả "trị liệu", "phục hồi chức năng", "vật lý trị liệu" (sát hành nghề y).
 Đổi `name` danh mục: "Chăm sóc vai gáy", "Chăm sóc lưng", "Chăm sóc chân", "Chăm sóc da mặt", "Gội đầu dưỡng sinh".
 App tạm map tên cũ qua `utils/category-label.ts`. Luật sư cần chốt cách tách gói có/không xoa bóp và hoá đơn riêng.
+
+## Mô hình trung gian như Shopee (CEO chốt 31/10/2026) — việc backend và kế toán
+
+Cơ quan nhà nước xét theo **bản chất**: ai định giá, ai điều phối, ai giữ tiền (NĐ 158/2024 Điều 75 với
+gọi xe; vụ Vinasun–Grab 2020; EU C-434/15 Uber). Điều khoản app đã viết lại theo mô hình trung gian
+(`features/legal/legal-content.ts` bản 2026-10-31.2) — backend và sổ sách phải khớp với điều khoản.
+
+1. **Giá do KTV quyết** (P0): autoMatch không dùng giá gói do TAYZEN cấu hình; gửi yêu cầu rộng tới các KTV
+   phù hợp, mỗi KTV thấy giá của chính mình, khách xác nhận giá trước khi KTV xuất phát. Bỏ giá mặc định
+   150.000đ khi KTV chưa đặt giá (`services/api/workers.ts` đang có fallback này — KTV chưa đặt giá thì không hiện).
+2. **Không chỉ định, không phạt** (P0): KTV từ chối/bỏ qua đơn không bị trừ điểm, không khoá; không có tỷ lệ
+   nhận đơn tối thiểu; không phạt tiền. GPS chỉ dùng cho an toàn, không chấm công/xếp hạng.
+3. **Lưu nhật ký bằng chứng trung gian**: KTV đặt giá bao nhiêu, lúc nào; đơn được gửi tới những KTV nào;
+   ai nhận/từ chối. Đây là bằng chứng khi bị thanh tra.
+4. **Thu hộ**: tiền khách trả qua app ghi là *phải trả KTV*, doanh thu TAYZEN chỉ là phí 30%. Ưu tiên dùng
+   dịch vụ thu hộ–chi hộ của PayOS/VNPay hoặc tài khoản thu hộ riêng; đối soát từng đơn
+   (tiền vào = phí + VAT phí + thuế khấu trừ + phải trả KTV). Chuyển cho KTV sau 24 giờ khiếu nại.
+5. **Hoá đơn**: TAYZEN xuất hoá đơn GTGT phần phí cho KTV; hoá đơn dịch vụ cho khách do KTV xuất hoặc
+   TAYZEN lập thay theo uỷ nhiệm (NĐ 70/2025, TT 32/2025) — người bán ghi là KTV.
+6. **Tạm giữ tiền** chỉ với đơn đang tranh chấp/nghi gian lận, tối đa 30 ngày.
+7. **Ví khách hàng** (chờ CEO + luật sư): giữ số dư nạp trước là dịch vụ ví điện tử cần giấy phép NHNN
+   (vốn ≥ 50 tỷ, NĐ 52/2024). Đề xuất tắt nạp ví khách, hoàn tiền về nguồn thanh toán, hoặc đổi thành điểm
+   thưởng không quy đổi tiền. Số dư KTV chỉ là sổ công nợ: không chuyển cho người khác, rút về tài khoản chính chủ.
+8. **VAT trên phí**: 10% hay 8% (giảm thuế 2026) — kế toán chốt; app đang để 10% ở `features/finance/commission.ts`.

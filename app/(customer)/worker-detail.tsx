@@ -432,11 +432,11 @@ export default function WorkerDetailScreen() {
             <View style={styles.glowCareCommitments}>
               <View style={styles.commitmentLine}>
                 <MaterialIcons name="check-box" size={18} color="#0F382C" />
-                <Text style={styles.commitmentText}>Không phụ phí, không tiền boa bắt buộc</Text>
+                <Text style={styles.commitmentText}>KTV độc lập, có nút SOS khi cần</Text>
               </View>
               <View style={styles.commitmentLine}>
                 <MaterialIcons name="check-box" size={18} color="#0F382C" />
-                <Text style={styles.commitmentText}>Cam kết chất lượng dịch vụ minh bạch</Text>
+                <Text style={styles.commitmentText}>Giá do KTV niêm yết, thanh toán qua TAYZEN</Text>
               </View>
               {/* status 1 = hồ sơ KTV đã được duyệt (cùng quy ước với login.tsx) */}
               {worker?.status === 1 ? (

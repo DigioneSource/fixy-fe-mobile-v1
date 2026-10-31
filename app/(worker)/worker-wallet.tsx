@@ -322,7 +322,7 @@ export default function WorkerWalletScreen() {
             <View style={styles.balanceActions}>
               <Pressable style={styles.withdrawBtn} onPress={() => setTopupOpen(true)}>
                 <MaterialIcons name="add-card" size={18} color="#0F382C" />
-                <Text style={[styles.withdrawBtnText, { color: '#0F382C' }]}>Nạp ký quỹ</Text>
+                <Text style={[styles.withdrawBtnText, { color: '#0F382C' }]}>Nạp số dư bảo đảm</Text>
               </Pressable>
               <Pressable style={styles.withdrawBtn} onPress={handleWithdraw}>
                 <MaterialIcons name="payments" size={18} color="#9a4600" />
@@ -339,8 +339,8 @@ export default function WorkerWalletScreen() {
           visible={topupOpen}
           onClose={() => setTopupOpen(false)}
           onDone={() => fetchWallet(true)}
-          title="Nạp ký quỹ"
-          note="Ký quỹ dùng để nhận đơn thanh toán tiền mặt. Bạn có thể rút phần chưa dùng bất cứ lúc nào."
+          title="Nạp số dư bảo đảm"
+          note="Số dư bảo đảm dùng để thanh toán phí nền tảng và thuế khấu trừ của đơn tiền mặt. Phần chưa dùng là của bạn, rút được bất cứ lúc nào."
         />
 
         {/* Stats Row */}
