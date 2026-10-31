@@ -159,7 +159,9 @@ export default function BookingCheckoutScreen() {
   React.useEffect(() => {
     if (paymentMethods.length === 0) return;
     if (paymentMethods.some((m) => m.value === selectedPaymentMethod)) return;
-    const prepaid = paymentMethods.find((m) => m.value !== PaymentMethod.Cash);
+    const prepaid = paymentMethods.find(
+      (m) => m.value !== PaymentMethod.Cash && m.value !== PaymentMethod.Wallet
+    );
     setSelectedPaymentMethod((prepaid ?? paymentMethods[0]).value);
   }, [paymentMethods, selectedPaymentMethod]);
 
@@ -205,7 +207,7 @@ export default function BookingCheckoutScreen() {
         scheduledType: 0,
         totalDurationMinutes: durationNum,
         workerProfileId: activeWorkerProfileId || null,
-        autoMatch: !activeWorkerProfileId,
+        autoMatch: false,
       })
         .then((d) => {
           const id = d.id || d.draftId;
@@ -251,6 +253,13 @@ export default function BookingCheckoutScreen() {
       let bookingId = confirmedBookingRef.current;
 
       if (!bookingId) {
+        // Mô hình trung gian: khách chọn KTV cụ thể và trả đúng giá KTV niêm yết — TAYZEN không ghép, không định giá.
+        if (!activeWorkerProfileId) {
+          throw new Error('Vui lòng chọn một KTV trước khi đặt lịch.');
+        }
+        if (servicePrice <= 0) {
+          throw new Error('KTV chưa niêm yết giá cho gói này. Vui lòng chọn gói hoặc KTV khác.');
+        }
         if (isScheduled) {
           const minTime = Date.now() + MIN_SCHEDULE_LEAD_MINUTES * 60 * 1000;
           if (scheduledAt.getTime() < minTime) {
@@ -283,7 +292,7 @@ export default function BookingCheckoutScreen() {
             ...scheduleFields,
             totalDurationMinutes: durationNum,
             workerProfileId: activeWorkerProfileId || null,
-            autoMatch: !activeWorkerProfileId,
+            autoMatch: false,
             preferredWorkerGender: wantsGenderPreference ? genderPreference : undefined,
           });
 
@@ -299,7 +308,7 @@ export default function BookingCheckoutScreen() {
             ...scheduleFields,
             totalDurationMinutes: durationNum,
             workerProfileId: activeWorkerProfileId || null,
-            autoMatch: !activeWorkerProfileId,
+            autoMatch: false,
             preferredWorkerGender: wantsGenderPreference ? genderPreference : undefined,
           });
         }
@@ -1022,7 +1031,10 @@ export default function BookingCheckoutScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.modalScroll}>
-              {paymentMethods.map((method) => {
+              {paymentMethods
+                // Ví chỉ hiện khi còn số dư cũ (không nhận nạp mới — mô hình trung gian)
+                .filter((m) => m.value !== PaymentMethod.Wallet || walletBalance > 0)
+                .map((method) => {
                 const isSelected = selectedPaymentMethod === method.value;
                 const iconName = getPaymentIcon(method.value);
                 return (

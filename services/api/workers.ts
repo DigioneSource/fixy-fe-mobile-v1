@@ -108,7 +108,8 @@ function getWorkerBasePrice(w: any, categoryId?: string) {
   const matchingService = categoryId
     ? w.services?.find((service: any) => service.categoryId === categoryId)
     : undefined;
-  return matchingService?.basePrice || w.services?.[0]?.basePrice || w.basePrice || 150000;
+  // Không có giá mặc định: KTV chưa niêm yết giá thì trả 0 (app ẩn KTV đó khỏi kết quả đặt).
+  return matchingService?.basePrice || w.services?.[0]?.basePrice || w.basePrice || 0;
 }
 
 function mapBackendWorkerToProfile(w: any, categoryId?: string): WorkerProfile {
@@ -280,7 +281,10 @@ export async function searchWorkers(params: WorkerSearchParams): Promise<WorkerP
     const resData = response.data;
     const items = resData?.data?.items ?? resData?.data ?? resData;
     if (items && Array.isArray(items)) {
-      return items.map((w: any) => mapBackendWorkerToProfile(w, resolvedCategoryId));
+      // Chỉ hiện KTV đã tự niêm yết giá — TAYZEN không gán giá thay KTV.
+      return items
+        .map((w: any) => mapBackendWorkerToProfile(w, resolvedCategoryId))
+        .filter((w: WorkerProfile) => w.basePrice > 0);
     }
     return [];
   } catch (error) {
@@ -800,7 +804,11 @@ export async function searchWorkerProfiles(
   const items = data?.items ?? [];
 
   return {
-    items: Array.isArray(items) ? items.map((w: any) => mapBackendWorkerToProfile(w)) : [],
+    items: Array.isArray(items)
+      ? items
+          .map((w: any) => mapBackendWorkerToProfile(w))
+          .filter((w: WorkerProfile) => w.basePrice > 0)
+      : [],
     pageNumber: data?.pageNumber ?? 1,
     pageSize: data?.pageSize ?? 10,
     totalCount: data?.totalCount ?? 0,

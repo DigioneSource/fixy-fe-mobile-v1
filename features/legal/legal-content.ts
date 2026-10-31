@@ -143,3 +143,37 @@ export const PRIVACY_POLICY: LegalSection[] = [
     ],
   },
 ];
+
+// Hợp đồng sử dụng dịch vụ nền tảng giữa TAYZEN và KTV (bắt buộc trong hồ sơ đăng ký TMĐT, NĐ 248/2026).
+// Bản tóm tắt điều khoản chính hiển thị trong app; bản đầy đủ do luật sư hoàn thiện.
+export const WORKER_PARTNER_TERMS: LegalSection[] = [
+  {
+    title: '1. Quan hệ giữa TAYZEN và KTV',
+    items: [
+      'KTV sử dụng dịch vụ nền tảng của TAYZEN để tự giới thiệu và cung ứng dịch vụ của mình cho Khách hàng. KTV là bên cung ứng dịch vụ; TAYZEN là nền tảng thương mại điện tử trung gian.',
+      'Hợp đồng này là hợp đồng dân sự, không phải hợp đồng lao động. TAYZEN không trả lương, không giao ca, không quy định giờ làm, số đơn tối thiểu hay đồng phục. KTV được làm việc trên các nền tảng khác.',
+    ],
+  },
+  {
+    title: '2. Quyền tự quyết của KTV',
+    items: [
+      'KTV tự niêm yết giá, tự đặt lịch làm việc, tự chọn nhận hoặc từ chối từng yêu cầu. Từ chối hoặc bỏ qua yêu cầu không bị trừ điểm, không bị phạt, không bị khoá.',
+      'KTV tự chịu trách nhiệm về chuyên môn, dụng cụ, chất lượng dịch vụ, giấy phép và điều kiện kinh doanh mà pháp luật yêu cầu (nếu có), và các nghĩa vụ thuế ngoài phần TAYZEN khấu trừ, nộp thay.',
+    ],
+  },
+  {
+    title: '3. Uỷ quyền thu hộ, phí và hoá đơn',
+    items: [
+      'KTV uỷ quyền cho TAYZEN thu hộ tiền dịch vụ khi Khách hàng thanh toán qua ứng dụng, và chuyển lại cho KTV sau khi trừ phí dịch vụ nền tảng 30% (chưa gồm thuế GTGT 10%) cùng thuế khấu trừ, nộp thay theo luật.',
+      'Với đơn tiền mặt, KTV duy trì số dư bảo đảm bằng phí nền tảng (gồm VAT) cộng thuế khấu trừ của đơn, hiện bằng 40% giá đơn; phần chưa dùng thuộc về KTV và rút được bất kỳ lúc nào.',
+      'KTV uỷ nhiệm TAYZEN lập hoá đơn điện tử dịch vụ thay KTV cho Khách hàng (người bán ghi là KTV). TAYZEN xuất hoá đơn GTGT phần phí nền tảng cho KTV.',
+    ],
+  },
+  {
+    title: '4. Tạm ngưng, chấm dứt và khiếu nại',
+    items: [
+      'TAYZEN chỉ tạm ngưng hoặc chấm dứt tài khoản khi vi phạm đã được xác minh theo Quy chế hoạt động công khai, có thông báo lý do. TAYZEN không phạt tiền KTV.',
+      'KTV có quyền khiếu nại qua mục Hỗ trợ; TAYZEN phản hồi trong 03 ngày làm việc. Mỗi bên có thể chấm dứt hợp đồng bất kỳ lúc nào; KTV có thể xoá tài khoản trong ứng dụng sau khi hoàn tất các đơn đang thực hiện.',
+    ],
+  },
+];

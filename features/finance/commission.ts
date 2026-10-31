@@ -28,3 +28,9 @@ export function requiredCashDeposit(servicePrice: number) {
 }
 
 export const formatPercent = (rate: number) => `${Math.round(rate * 100)}%`;
+
+/**
+ * Ví khách hàng: giữ tiền nạp trước là dịch vụ ví điện tử, cần giấy phép NHNN (NĐ 52/2024).
+ * Tắt nạp tiền cho tới khi dùng ví của đơn vị có giấy phép; số dư cũ vẫn dùng được để trả đơn.
+ */
+export const FEATURE_CUSTOMER_WALLET_TOPUP = false;

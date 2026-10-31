@@ -25,7 +25,11 @@ import { useLocationStore } from '@/store/store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const SPA_BANNER_CARDS = [
+// Mảng "Địa điểm spa" (cơ sở spa) tạm ẩn: chưa có hợp đồng đối tác spa nào, và Quy chế/Đề án đăng ký
+// TMĐT chỉ mô tả KTV độc lập. Bật lại khi có hợp đồng và bổ sung nhóm đối tác này vào hồ sơ đăng ký.
+const FEATURE_SPA_VENUES = false;
+
+const ALL_SPA_BANNER_CARDS = [
   {
     id: 'health',
     title: 'Sức khoẻ tại nhà',
@@ -50,6 +54,10 @@ const SPA_BANNER_CARDS = [
     image: require('@/assets/DIA DIEM SPA.webp'),
   },
 ];
+
+const SPA_BANNER_CARDS = ALL_SPA_BANNER_CARDS.filter(
+  (card) => FEATURE_SPA_VENUES || card.category !== 'dia-diem-spa'
+);
 
 function getInitials(name: string): string {
   if (!name) return '?';

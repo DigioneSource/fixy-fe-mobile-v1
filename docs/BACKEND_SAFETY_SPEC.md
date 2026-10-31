@@ -177,3 +177,14 @@ gọi xe; vụ Vinasun–Grab 2020; EU C-434/15 Uber). Điều khoản app đã 
    (vốn ≥ 50 tỷ, NĐ 52/2024). Đề xuất tắt nạp ví khách, hoàn tiền về nguồn thanh toán, hoặc đổi thành điểm
    thưởng không quy đổi tiền. Số dư KTV chỉ là sổ công nợ: không chuyển cho người khác, rút về tài khoản chính chủ.
 8. **VAT trên phí**: 10% hay 8% (giảm thuế 2026) — kế toán chốt; app đang để 10% ở `features/finance/commission.ts`.
+
+### Đã làm phía app (31/10, theo khuyến nghị — CEO chốt VAT phí 10%)
+- App **không còn ghép tự động**: checkout luôn gửi `autoMatch: false` + KTV khách đã chọn; BE nên từ chối
+  `autoMatch=true` cho tới khi có cơ chế "gửi rộng, KTV báo giá của mình".
+- Bỏ mọi giá mặc định (150.000đ/500.000đ) ở app; KTV chưa niêm yết giá bị ẩn khỏi kết quả; form đăng ký KTV
+  bắt tự nhập giá. BE nên từ chối `WorkerService` có giá ≤ 0.
+- Tắt nạp ví khách (`FEATURE_CUSTOMER_WALLET_TOPUP=false`); ví chỉ hiện khi còn số dư cũ. BE: chặn
+  `POST /payment/topup` với vai khách; hoàn tiền về nguồn thanh toán; quy trình hoàn số dư cũ qua Hỗ trợ.
+- KTV phải đồng ý "Hợp đồng sử dụng dịch vụ nền tảng" (`WORKER_PARTNER_TERMS`) trước khi gửi hồ sơ.
+  BE cần lưu `partnerTermsVersion` + thời điểm đồng ý (bằng chứng uỷ quyền thu hộ, uỷ nhiệm hoá đơn).
+- Ẩn mảng "Địa điểm spa" (chưa có hợp đồng đối tác spa).

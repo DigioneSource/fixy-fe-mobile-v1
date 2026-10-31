@@ -25,6 +25,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getApiErrorMessage } from '@/services/api/client';
 import { fetchCategories } from '@/services/api/categories';
+import { TermsModal } from '@/components/legal/legal-notice';
 import { recognizeIdentityImage } from '@/services/api/fpt';
 import { prepareUploadFile } from '@/services/api/media';
 import { vietnamProvincesApi, matchAddressOption, cleanSearchText } from '@/services/api/provinces';
@@ -120,6 +121,8 @@ export default function WorkerSetupScreen() {
   const [scanningCccd, setScanningCccd] = React.useState(false);
   // Đồng ý riêng cho việc thu ảnh CCCD (Luật 91/2025/QH15) — bắt buộc trước khi chụp/tải CCCD.
   const [cccdConsent, setCccdConsent] = React.useState(false);
+  const [partnerTermsAccepted, setPartnerTermsAccepted] = React.useState(false);
+  const [partnerTermsOpen, setPartnerTermsOpen] = React.useState(false);
   const [activePreviewImage, setActivePreviewImage] = React.useState<string | null>(null);
 
   // Certificates list
@@ -295,19 +298,17 @@ export default function WorkerSetupScreen() {
         profile.services.forEach((s: any) => {
           serviceMap[s.categoryId] = {
             categoryId: s.categoryId,
-            basePrice: s.basePrice || 150000,
+            basePrice: s.basePrice || 0,
             options:
               s.options && s.options.length > 0
                 ? s.options.map((opt: any, idx: number) => ({
                     durationMinutes: opt.durationMinutes || 60,
-                    price: opt.price || 150000,
+                    price: opt.price || 0,
                     sortOrder: opt.sortOrder ?? idx + 1,
                     isActive: opt.isActive ?? true,
                   }))
                 : [
-                    { durationMinutes: 60, price: s.basePrice || 500000, sortOrder: 1, isActive: true },
-                    { durationMinutes: 90, price: (s.basePrice || 500000) + 150000, sortOrder: 2, isActive: true },
-                    { durationMinutes: 120, price: (s.basePrice || 500000) + 300000, sortOrder: 3, isActive: true },
+                    { durationMinutes: 60, price: s.basePrice || 0, sortOrder: 1, isActive: true },
                   ],
           };
         });
@@ -587,14 +588,11 @@ export default function WorkerSetupScreen() {
     if (next[catId]) {
       delete next[catId];
     } else {
+      // TAYZEN không đặt giá thay KTV: chỉ tạo khung thời lượng, KTV tự nhập giá.
       next[catId] = {
         categoryId: catId,
-        basePrice: 500000,
-        options: [
-          { durationMinutes: 60, price: 500000, sortOrder: 1, isActive: true },
-          { durationMinutes: 90, price: 650000, sortOrder: 2, isActive: true },
-          { durationMinutes: 120, price: 800000, sortOrder: 3, isActive: true },
-        ],
+        basePrice: 0,
+        options: [{ durationMinutes: 60, price: 0, sortOrder: 1, isActive: true }],
       };
     }
     setSelectedServices(next);
@@ -643,7 +641,7 @@ export default function WorkerSetupScreen() {
 
     const lastOpt = currentItem.options[currentItem.options.length - 1];
     const nextDuration = lastOpt ? lastOpt.durationMinutes + 30 : 60;
-    const nextPrice = lastOpt ? lastOpt.price + 150000 : 500000;
+    const nextPrice = 0;
 
     const newOptions = [
       ...currentItem.options,
@@ -730,6 +728,13 @@ export default function WorkerSetupScreen() {
   });
 
   const handleSubmit = async () => {
+    if (!partnerTermsAccepted) {
+      Alert.alert(
+        'Chưa đồng ý hợp đồng',
+        'Vui lòng đọc và đồng ý Hợp đồng sử dụng dịch vụ nền tảng trước khi gửi hồ sơ.'
+      );
+      return;
+    }
     // Validations
     if (!addrCity || !addrWard || !addrDetail) {
       Alert.alert('Thiếu thông tin', 'Vui lòng cung cấp đầy đủ thông tin địa chỉ hoạt động.');
@@ -739,6 +744,10 @@ export default function WorkerSetupScreen() {
     const servicesList = Object.values(selectedServices);
     if (servicesList.length === 0) {
       Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất 1 dịch vụ chuyên môn của bạn.');
+      return;
+    }
+    if (servicesList.some((svc) => svc.options.some((o) => !o.price || o.price <= 0))) {
+      Alert.alert('Chưa nhập giá', 'Vui lòng tự nhập giá cho từng gói thời lượng của dịch vụ.');
       return;
     }
 
@@ -1046,7 +1055,7 @@ export default function WorkerSetupScreen() {
                                 value={String(opt.price || '')}
                                 onChangeText={(val) => handleOptionPriceChange(cat.id, optIdx, val)}
                                 keyboardType="number-pad"
-                                placeholder="500,000"
+                                placeholder="Bạn tự đặt giá"
                                 placeholderTextColor="#9A9A9A"
                               />
                             </View>
@@ -1096,6 +1105,17 @@ export default function WorkerSetupScreen() {
                 }
                 if (Object.keys(selectedServices).length === 0) {
                   Alert.alert('Thiếu thông tin', 'Vui lòng chọn ít nhất một dịch vụ chuyên môn.');
+                  return;
+                }
+                if (
+                  Object.values(selectedServices).some((svc) =>
+                    svc.options.some((o) => !o.price || o.price <= 0)
+                  )
+                ) {
+                  Alert.alert(
+                    'Chưa nhập giá',
+                    'Vui lòng tự nhập giá cho từng gói thời lượng. Giá do bạn quyết định, TAYZEN không đặt giá thay KTV.'
+                  );
                   return;
                 }
                 setCurrentStep(2);
@@ -1457,6 +1477,39 @@ export default function WorkerSetupScreen() {
                 </View>
               )}
             </View>
+
+            <View style={styles.cccdConsentBox}>
+              <Text style={styles.cccdConsentText}>
+                Bạn là đối tác độc lập: tự đặt giá, tự chọn nhận đơn và giờ làm. TAYZEN thu hộ tiền
+                dịch vụ và thu phí nền tảng 30% (chưa gồm VAT 10%).{' '}
+                <Text style={styles.partnerTermsLink} onPress={() => setPartnerTermsOpen(true)}>
+                  Đọc hợp đồng
+                </Text>
+              </Text>
+              <Pressable
+                style={styles.cccdConsentRow}
+                onPress={() => setPartnerTermsAccepted((value) => !value)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: partnerTermsAccepted }}>
+                <View
+                  style={[
+                    styles.cccdConsentCheckbox,
+                    partnerTermsAccepted && styles.cccdConsentCheckboxChecked,
+                  ]}>
+                  {partnerTermsAccepted ? (
+                    <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                  ) : null}
+                </View>
+                <Text style={styles.cccdConsentLabel}>
+                  Tôi đồng ý Hợp đồng sử dụng dịch vụ nền tảng TAYZEN
+                </Text>
+              </Pressable>
+            </View>
+            <TermsModal
+              visible={partnerTermsOpen}
+              onClose={() => setPartnerTermsOpen(false)}
+              document="partner"
+            />
 
             <View style={styles.wizardNavRow}>
               <Pressable style={styles.backBtn} onPress={() => setCurrentStep(2)}>
@@ -2411,5 +2464,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#718096',
     marginTop: 2,
+  },
+  partnerTermsLink: {
+    color: '#0F382C',
+    fontFamily: 'Montserrat_700Bold',
+    textDecorationLine: 'underline',
   },
 });

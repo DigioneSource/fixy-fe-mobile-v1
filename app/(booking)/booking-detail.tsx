@@ -299,8 +299,9 @@ export default function BookingDetailScreen() {
   });
 
   // Local UI States
+  // Mặc định VNPay; ví chỉ dùng khi còn số dư cũ (không nhận nạp mới).
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<PaymentMethod>(
-    PaymentMethod.Wallet
+    PaymentMethod.Vnpay
   );
   const [voucherCode, setVoucherCode] = React.useState('');
   const [selectedVoucher, setSelectedVoucher] = React.useState<EligibleVoucher | null>(null);
@@ -944,10 +945,14 @@ export default function BookingDetailScreen() {
           <View style={{ gap: 10 }}>
             <View style={styles.payMethodRow}>
               {[
-                {
-                  value: PaymentMethod.Wallet,
-                  label: `Ví TAYZEN${wallet ? ` (${formatCurrency(wallet.balance)})` : ''}`,
-                },
+                ...((wallet?.balance ?? 0) > 0
+                  ? [
+                      {
+                        value: PaymentMethod.Wallet,
+                        label: `Ví TAYZEN (${formatCurrency(wallet?.balance ?? 0)})`,
+                      },
+                    ]
+                  : []),
                 { value: PaymentMethod.Vnpay, label: 'VNPay' },
               ].map((option) => {
                 const active = selectedPaymentMethod === option.value;

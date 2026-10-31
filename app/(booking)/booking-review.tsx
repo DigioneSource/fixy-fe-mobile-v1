@@ -183,7 +183,7 @@ export default function BookingReviewScreen() {
           <View>
             <Text style={styles.workerName}>{params.workerName ?? 'Nguyễn Văn Thắng'}</Text>
             <Text style={styles.workerSpecialty}>
-              {displayCategoryName(params.categoryName) || 'Kỹ thuật viên TAYZEN'}
+              {displayCategoryName(params.categoryName) || 'KTV độc lập trên TAYZEN'}
             </Text>
           </View>
         </View>

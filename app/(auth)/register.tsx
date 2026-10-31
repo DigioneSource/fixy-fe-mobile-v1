@@ -682,7 +682,7 @@ function RegisterForm({
               <View style={styles.divider} />
             </View>
 
-            <LawViolationBanner detail="TAYZEN chỉ cung cấp dịch vụ chăm sóc sức khoẻ và làm đẹp theo chuẩn spa. Mọi hành vi trái pháp luật đều bị cấm và khoá tài khoản vĩnh viễn." />
+            <LawViolationBanner detail="TAYZEN là nền tảng kết nối với KTV độc lập; trên TAYZEN chỉ có dịch vụ chăm sóc thư giãn và làm đẹp. Mọi hành vi trái pháp luật đều bị cấm và khoá tài khoản vĩnh viễn." />
             {termsAgreement}
 
             <Pressable

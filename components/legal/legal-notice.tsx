@@ -9,6 +9,7 @@ import {
   LegalSection,
   PRIVACY_POLICY,
   REGISTRATION_TERMS,
+  WORKER_PARTNER_TERMS,
 } from '@/features/legal/legal-content';
 
 export function LawViolationBanner({ detail }: Readonly<{ detail?: string }>) {
@@ -23,11 +24,12 @@ export function LawViolationBanner({ detail }: Readonly<{ detail?: string }>) {
   );
 }
 
-type LegalDocument = 'terms' | 'privacy';
+type LegalDocument = 'terms' | 'privacy' | 'partner';
 
 const LEGAL_DOCUMENTS: Record<LegalDocument, { title: string; sections: LegalSection[] }> = {
   terms: { title: 'Điều khoản sử dụng', sections: REGISTRATION_TERMS },
   privacy: { title: 'Chính sách bảo mật', sections: PRIVACY_POLICY },
+  partner: { title: 'Hợp đồng sử dụng dịch vụ nền tảng', sections: WORKER_PARTNER_TERMS },
 };
 
 export function TermsModal({

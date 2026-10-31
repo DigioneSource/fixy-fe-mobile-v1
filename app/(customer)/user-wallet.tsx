@@ -17,6 +17,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FEATURE_CUSTOMER_WALLET_TOPUP } from '@/features/finance/commission';
 import VNPayWebView from '@/components/VNPayWebView';
 import { BottomTabBar } from '@/components/layout/bottom-tab-bar';
 import { getWalletOverview, WalletOverview } from '@/services/api/wallet';
@@ -175,7 +176,8 @@ export default function UserWalletScreen() {
               </LinearGradient>
             </View>
 
-            {/* Top Up Section */}
+            {/* Top Up Section — tắt theo mô hình trung gian (xem FEATURE_CUSTOMER_WALLET_TOPUP) */}
+            {FEATURE_CUSTOMER_WALLET_TOPUP ? (
             <View style={styles.topupSection}>
               <Text style={styles.sectionTitle}>Nạp tiền vào ví</Text>
               <View style={styles.topupCard}>
@@ -227,6 +229,18 @@ export default function UserWalletScreen() {
                 </Pressable>
               </View>
             </View>
+            ) : (
+              <View style={styles.topupSection}>
+                <View style={styles.topupCard}>
+                  <Text style={styles.sectionTitle}>Thanh toán trực tiếp từng đơn</Text>
+                  <Text style={styles.topupNotice}>
+                    TAYZEN không nhận nạp tiền vào ví. Bạn thanh toán từng đơn qua PayOS hoặc VNPay;
+                    tiền hoàn sẽ trả về đúng nguồn đã thanh toán. Số dư hiện có (nếu có) vẫn dùng
+                    được để trả đơn, hoặc gửi yêu cầu hoàn về tài khoản ngân hàng qua mục Hỗ trợ.
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* Transaction History */}
             <View style={styles.transactionSection}>
@@ -508,5 +522,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Montserrat_400Regular',
     fontSize: 14,
     color: '#818A91',
+  },
+  topupNotice: {
+    marginTop: 8,
+    color: '#475467',
+    fontFamily: 'Montserrat_400Regular',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
