@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TAYZEN",
-    "slug": "fixy-app",
+    "slug": "tayzen",
     "version": "1.0.0",
     "scheme": [
       "tayzen",
@@ -75,8 +75,9 @@
       "vietnamProvincesApiUrl": "https://provinces.open-api.vn/api/v2",
       "router": {},
       "eas": {
-        "projectId": "901f1bec-4b1c-4717-8dd5-2c1b13bdc6f3"
+        "projectId": "b99d7065-214f-4bf4-973e-6b96e31b2fb6"
       }
-    }
+    },
+    "owner": "digifnb"
   }
 }
