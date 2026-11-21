@@ -30,7 +30,7 @@
 
 ## 21/11 tối — store
 - **App Store Connect**: app TAYZEN `6837625263` (SKU tayzen-ios-001, tiếng Việt). Build iOS 1.0.0 (9) có Goong ĐÃ NỘP lên TestFlight (submission 3abee68c). `eas submit` cần ascApiKeyPath/Id/IssuerId trong eas.json → thêm TẠM khi nộp, không commit (đường dẫn máy Mac).
-- **Google Play Console** (Chrome mrsangtms, tài khoản DIGI FNB COMPANY LIMITED): app TAYZEN `4972895379482822376`, gói vn.tayzen.app, miễn phí. Lần đầu phải tải AAB bằng tay (thử nghiệm nội bộ).
+- **Google Play Console** (Chrome mrsangtms, tài khoản DIGI FNB COMPANY LIMITED): app TAYZEN `4972895379482822376`, gói vn.tayzen.app, miễn phí. ✅ 21/11 15:59 bản 1.0.0 (versionCode 2) ĐÃ PHÁT HÀNH kênh thử nghiệm nội bộ, người thử = danh sách 'Thử nghiệm 01' (9 người). Link tham gia: https://play.google.com/apps/internaltest/4700876203618359921 . Tải AAB: CEO kéo thả (file 95MB > giới hạn 10MB của công cụ Chrome; dùng SA ChonDiem cho TAYZEN bị chặn — cần SA riêng nếu muốn tự đẩy).
 - **Goong**: khoá `tayzen-app` (API) + `tayzen-maptiles` trên tài khoản sangtran.dna; lưu ở biến EAS (development/preview/production, sensitive). eas.json đã gắn `environment` cho từng profile — thiếu cái này EAS KHÔNG nạp biến.
 
 ## Đang chờ CEO
