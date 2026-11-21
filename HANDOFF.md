@@ -38,7 +38,7 @@
 - App `a4feac5`: `components/payment/sepay-qr-modal.tsx`; checkout/chi tiết đơn mặc định SePay, chỉ còn SePay/Tiền mặt/Ví; KTV nạp số dư qua QR. Thêm expo-clipboard → CẦN BUILD MỚI.
 - CEO chốt 21/11: tiền về **tài khoản HKD SangTQ** (hộ kinh doanh, không phải TK công ty DIGI FNB).
 - 21/11: VPS đã điền SePay__BankCode=VietinBank, AccountNumber=101884996650, AccountName=HO KINH DOANH SANGTQ. Webhook SePay 'TAYZEN thanh toan' đang tạo (chỉ TK ****6650, tiền vào, JSON, tự gửi lại) — CEO tự dán API key từ `~/.tayzen-secrets/sepay-webhook-token.txt` (Claude không được gõ khoá vào web).
-- Pháp nhân đổi sang **HỘ KINH DOANH SANGTQ** (app 50adbe4, web a4d21f4 đã deploy; LEGAL_VERSION 2026-11-21.1). Còn [__]: MST, số/ngày/nơi cấp GCN ĐKHKD, địa chỉ kinh doanh. ⚠️ Cần CEO/luật sư: thuế GTGT phí 33% (cách tính của công ty), nghĩa vụ khấu trừ thuế KTV, HKD có được đứng tên nền tảng TMĐT trung gian; Apple/Google đứng tên DIGI FNB.
+- Pháp nhân đổi sang **HỘ KINH DOANH SANGTQ** (app 50adbe4, web a4d21f4 đã deploy; LEGAL_VERSION 2026-11-21.1). Còn [__]: MST, số/ngày/nơi cấp GCN ĐKHKD, địa chỉ kinh doanh. ✅ CEO 21/11: phí = **30% + GTGT 8% = 32,4%** (backend 029cee5 đã deploy, app 801374e, web; ký quỹ tiền mặt vẫn 40%). CEO: HKD chỉ để TEST, ổn thì chuyển sang công ty DIGI FNB (đổi lại company-info, Quy chế, TK SePay). ⚠️ Còn cần luật sư: nghĩa vụ khấu trừ thuế KTV, HKD có được đứng tên nền tảng TMĐT trung gian; Apple/Google đứng tên DIGI FNB.
 - **Còn thiếu (cũ)**: điền `SePay__BankCode/AccountNumber/AccountName` trên VPS (chưa điền → app báo "phương thức tạm chưa dùng được") + tạo webhook trên my.sepay.vn (tài khoản sangtran.dna) trỏ URL trên, kiểu xác thực API Key = token trong .env VPS, chỉ giao dịch tiền vào.
 
 ## Đang chờ CEO
