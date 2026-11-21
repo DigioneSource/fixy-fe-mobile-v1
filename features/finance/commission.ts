@@ -3,14 +3,14 @@
 
 /** Phí nền tảng chưa thuế. */
 export const PLATFORM_FEE_RATE = 0.3;
-/** Thuế GTGT trên phí nền tảng. */
-export const PLATFORM_FEE_VAT_RATE = 0.1;
-/** Tổng KTV trả nền tảng, đã gồm thuế: 30% × 1,1 = 33%. */
+/** Thuế GTGT trên phí nền tảng — CEO 21/11/2026: 8%. */
+export const PLATFORM_FEE_VAT_RATE = 0.08;
+/** Tổng KTV trả nền tảng, đã gồm thuế: 30% × 1,08 = 32,4%. */
 export const PLATFORM_FEE_TOTAL_RATE = PLATFORM_FEE_RATE * (1 + PLATFORM_FEE_VAT_RATE);
 
 /**
  * Đơn tiền mặt: số dư bảo đảm tối thiểu 40% giá đơn (gói 500k → 200k)
- * = phí nền tảng 33% (gồm VAT) + thuế GTGT 5% và TNCN 2% TAYZEN khấu trừ, nộp thay cho KTV.
+ * ≈ phí nền tảng 32,4% (gồm VAT 8%) + thuế GTGT 5% và TNCN 2% TAYZEN khấu trừ, nộp thay cho KTV.
  */
 export const WORKER_CASH_DEPOSIT_RATE = 0.4;
 
@@ -27,7 +27,8 @@ export function requiredCashDeposit(servicePrice: number) {
   return Math.ceil((Math.max(0, servicePrice || 0) * WORKER_CASH_DEPOSIT_RATE) / 1000) * 1000;
 }
 
-export const formatPercent = (rate: number) => `${Math.round(rate * 100)}%`;
+export const formatPercent = (rate: number) =>
+  `${(Math.round(rate * 1000) / 10).toLocaleString('vi-VN')}%`;
 
 /**
  * Ví khách hàng: giữ tiền nạp trước là dịch vụ ví điện tử, cần giấy phép NHNN (NĐ 52/2024).

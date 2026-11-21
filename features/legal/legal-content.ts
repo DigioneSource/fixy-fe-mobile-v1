@@ -1,7 +1,7 @@
 // Nội dung pháp lý hiển thị khi đăng ký và khi đặt đơn.
 // Bản nháp nội bộ — cần luật sư rà soát trước khi phát hành chính thức.
 
-export const LEGAL_VERSION = '2026-11-21.1';
+export const LEGAL_VERSION = '2026-11-21.2';
 
 export const LAW_VIOLATION_NOTICE = 'Nghiêm cấm mọi hành vi vi phạm pháp luật';
 
@@ -51,7 +51,7 @@ export const REGISTRATION_TERMS: LegalSection[] = [
     items: [
       'Khi Khách hàng thanh toán qua ứng dụng (chuyển khoản ngân hàng bằng mã VietQR vào tài khoản của TAYZEN), TAYZEN nhận khoản tiền đó với tư cách bên thu hộ cho KTV theo uỷ quyền của KTV. Tiền dịch vụ là doanh thu của KTV, không phải doanh thu của TAYZEN.',
       'TAYZEN chuyển tiền thu hộ cho KTV sau khi đơn hoàn thành và hết thời hạn khiếu nại 24 giờ (hoặc khi Khách hàng xác nhận hoàn thành), sau khi trừ phí dịch vụ nền tảng và khoản thuế TAYZEN khấu trừ, nộp thay theo luật.',
-      'Phí dịch vụ nền tảng là tiền KTV trả cho TAYZEN để dùng hạ tầng kết nối, thanh toán và hỗ trợ: 30% giá dịch vụ chưa gồm thuế GTGT (33% đã gồm thuế), tính trên giá KTV niêm yết hoặc đã báo. TAYZEN báo trước ít nhất 15 ngày khi đổi mức phí.',
+      'Phí dịch vụ nền tảng là tiền KTV trả cho TAYZEN để dùng hạ tầng kết nối, thanh toán và hỗ trợ: 30% giá dịch vụ chưa gồm thuế GTGT (32,4% đã gồm thuế GTGT 8%), tính trên giá KTV niêm yết hoặc đã báo. TAYZEN báo trước ít nhất 15 ngày khi đổi mức phí.',
       'Với đơn Khách hàng trả tiền mặt trực tiếp cho KTV, tại thời điểm nhận đơn KTV phải có số dư bảo đảm tối thiểu bằng phí dịch vụ nền tảng (đã gồm thuế) cộng khoản thuế TAYZEN khấu trừ, nộp thay của chính đơn đó, hiện bằng 40% giá đơn. Khoản này chỉ dùng để thanh toán phí và thuế của đơn đó; phần chưa dùng thuộc về KTV và được rút bất kỳ lúc nào.',
       'Khách hàng và KTV liên lạc qua tính năng nhắn tin, gọi trong ứng dụng; TAYZEN không hiển thị số điện thoại của hai bên để bảo vệ thông tin cá nhân và an toàn. Giao dịch ngoài ứng dụng không được TAYZEN hỗ trợ khiếu nại hay bảo vệ.',
     ],
