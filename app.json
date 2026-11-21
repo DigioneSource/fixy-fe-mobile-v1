@@ -37,7 +37,8 @@
           "photosPermission": "TAYZEN cần truy cập ảnh để bạn tải ảnh đại diện, CCCD và chứng chỉ.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "@maplibre/maplibre-react-native"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -69,7 +70,8 @@
       "package": "vn.tayzen.app",
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "googleServicesFile": "./google-services.json"
     },
     "extra": {
       "vietnamProvincesApiUrl": "https://provinces.open-api.vn/api/v2",

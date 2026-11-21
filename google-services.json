@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1073443393145",
+    "project_id": "tayzen-859af",
+    "storage_bucket": "tayzen-859af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1073443393145:android:42b6f4cd80880d730a8ea8",
+        "android_client_info": {
+          "package_name": "vn.tayzen.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDqAWf23Km42q5SYrd7XxcbhfjlHJLCuGo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
