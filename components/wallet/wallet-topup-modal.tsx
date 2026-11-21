@@ -13,10 +13,11 @@ import {
   View,
 } from 'react-native';
 
-import VNPayWebView from '@/components/VNPayWebView';
+import { SePayQrModal, isSePayUrl } from '@/components/payment/sepay-qr-modal';
 import { PaymentMethod } from '@/services/api/bookings';
 import { getApiErrorMessage } from '@/services/api/client';
-import { topUpWallet, verifyVnpayCallback } from '@/services/api/payment';
+import { topUpWallet } from '@/services/api/payment';
+import { getWalletOverview } from '@/services/api/wallet';
 import { formatCurrency } from '@/utils/format';
 
 const MIN_TOPUP = 10000;
@@ -30,7 +31,7 @@ type WalletTopupModalProps = {
   suggestedAmount?: number;
 };
 
-// Nạp tiền vào ví qua VNPay — dùng cho số dư bảo đảm phí của KTV (đơn tiền mặt) và các chỗ cần nạp nhanh.
+// Nạp tiền vào ví bằng chuyển khoản QR (SePay, 21/11 thay VNPay) — dùng cho số dư bảo đảm phí của KTV (đơn tiền mặt) và các chỗ cần nạp nhanh.
 export function WalletTopupModal({
   visible,
   onClose,
@@ -42,6 +43,7 @@ export function WalletTopupModal({
   const [amountText, setAmountText] = React.useState('');
   const [submitting, setSubmitting] = React.useState(false);
   const [paymentUrl, setPaymentUrl] = React.useState<string | null>(null);
+  const balanceBefore = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     if (visible) {
@@ -58,8 +60,14 @@ export function WalletTopupModal({
     }
     setSubmitting(true);
     try {
-      const result = await topUpWallet(amount, PaymentMethod.Vnpay);
-      if (!result.paymentUrl) throw new Error('Không nhận được liên kết thanh toán VNPay.');
+      try {
+        balanceBefore.current = (await getWalletOverview()).balance ?? 0;
+      } catch {
+        balanceBefore.current = null;
+      }
+      const result = await topUpWallet(amount, PaymentMethod.SePay);
+      if (!result.paymentUrl || !isSePayUrl(result.paymentUrl))
+        throw new Error('Không nhận được mã chuyển khoản. Vui lòng thử lại.');
       setPaymentUrl(result.paymentUrl);
     } catch (error) {
       Alert.alert('Không nạp được tiền', getApiErrorMessage(error));
@@ -105,32 +113,25 @@ export function WalletTopupModal({
               {submitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.submitText}>Nạp qua VNPay</Text>
+                <Text style={styles.submitText}>Nạp bằng chuyển khoản QR</Text>
               )}
             </Pressable>
           </View>
         </KeyboardAvoidingView>
       </Modal>
 
-      {paymentUrl ? (
-        <VNPayWebView
-          visible
-          paymentUrl={paymentUrl}
-          onClose={() => setPaymentUrl(null)}
-          onSuccess={async (_transactionId, params) => {
-            try {
-              await verifyVnpayCallback(params);
-              finish('Nạp tiền vào ví thành công.');
-            } catch {
-              finish('Đang chờ VNPay xác nhận. Số dư sẽ cập nhật trong ít phút.');
-            }
-          }}
-          onError={(message) => {
-            setPaymentUrl(null);
-            Alert.alert('Nạp tiền thất bại', message);
-          }}
-        />
-      ) : null}
+      <SePayQrModal
+        visible={!!paymentUrl}
+        paymentUrl={paymentUrl}
+        title="Nạp tiền bằng chuyển khoản QR"
+        checkPaid={async () => {
+          if (balanceBefore.current === null) return false;
+          const now = (await getWalletOverview()).balance ?? 0;
+          return now >= balanceBefore.current + amount;
+        }}
+        onPaid={() => finish('Nạp tiền vào ví thành công.')}
+        onClose={() => finish('Nếu bạn đã chuyển khoản, số dư sẽ tự cập nhật khi ngân hàng báo về.')}
+      />
     </>
   );
 }

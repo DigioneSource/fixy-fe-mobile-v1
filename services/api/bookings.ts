@@ -26,6 +26,7 @@ export enum PaymentMethod {
   PayOS = 3,
   Card = 4,
   Cash = 5,
+  SePay = 6,
 }
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
@@ -35,6 +36,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   [PaymentMethod.PayOS]: 'PayOS',
   [PaymentMethod.Card]: 'Thẻ ngân hàng',
   [PaymentMethod.Cash]: 'Tiền mặt',
+  [PaymentMethod.SePay]: 'Chuyển khoản QR',
 };
 
 export type BookingDraftInput = {
@@ -678,7 +680,26 @@ export type ApiPaymentMethodOption = {
 };
 
 /** GET /enums/PaymentMethod — Fetch available payment methods from BE */
+// 21/11/2026: TAYZEN chỉ thu bằng chuyển khoản QR (SePay), tiền mặt, và ví (khi còn số dư cũ).
+// Backend vẫn liệt kê VNPay/MoMo/PayOS/Thẻ trong enum nhưng không cấu hình → không cho chọn.
+export const ENABLED_PAYMENT_METHODS: PaymentMethod[] = [
+  PaymentMethod.SePay,
+  PaymentMethod.Cash,
+  PaymentMethod.Wallet,
+];
+
 export async function fetchPaymentMethodsApi(): Promise<ApiPaymentMethodOption[]> {
+  const all = await fetchAllPaymentMethodsApi();
+  return all
+    .filter((m) => ENABLED_PAYMENT_METHODS.includes(m.value as PaymentMethod))
+    .sort(
+      (a, b) =>
+        ENABLED_PAYMENT_METHODS.indexOf(a.value as PaymentMethod) -
+        ENABLED_PAYMENT_METHODS.indexOf(b.value as PaymentMethod)
+    );
+}
+
+async function fetchAllPaymentMethodsApi(): Promise<ApiPaymentMethodOption[]> {
   try {
     const response = await apiClient.get('/enums/PaymentMethod');
     const data = unwrapData(response.data);
@@ -686,7 +707,7 @@ export async function fetchPaymentMethodsApi(): Promise<ApiPaymentMethodOption[]
     if (Array.isArray(items) && items.length > 0) {
       return items.map((item: any) => {
         const val = typeof item.value === 'number' ? item.value : (item.Value ?? 5);
-        const label = item.displayName ?? item.DisplayName ?? item.description ?? item.Description ?? PAYMENT_METHOD_LABELS[val as PaymentMethod] ?? item.name;
+        const label = (val === PaymentMethod.Wallet ? PAYMENT_METHOD_LABELS[PaymentMethod.Wallet] : undefined) ?? item.displayName ?? item.DisplayName ?? item.description ?? item.Description ?? PAYMENT_METHOD_LABELS[val as PaymentMethod] ?? item.name;
         return {
           name: item.name ?? item.Name ?? String(val),
           value: val,
@@ -698,6 +719,7 @@ export async function fetchPaymentMethodsApi(): Promise<ApiPaymentMethodOption[]
     // Silent catch if offline or fallback
   }
   return [
+    { name: 'SePay', value: PaymentMethod.SePay, description: 'Chuyển khoản QR' },
     { name: 'Cash', value: PaymentMethod.Cash, description: 'Tiền mặt' },
     { name: 'Wallet', value: PaymentMethod.Wallet, description: 'Ví TAYZEN' },
     { name: 'Vnpay', value: PaymentMethod.Vnpay, description: 'VNPay' },

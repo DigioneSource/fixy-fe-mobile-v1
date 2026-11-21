@@ -47,6 +47,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import PayOSWebView from '@/components/PayOSWebView';
 import VNPayWebView from '@/components/VNPayWebView';
+import { SePayQrModal, isSePayUrl } from '@/components/payment/sepay-qr-modal';
 import { verifyVnpayCallback } from '@/services/api/payment';
 import { LawViolationBanner, TermsModal } from '@/components/legal/legal-notice';
 import { BOOKING_COMMITMENTS } from '@/features/legal/legal-content';
@@ -84,10 +85,12 @@ export default function BookingCheckoutScreen() {
   const [showVoucherModal, setShowVoucherModal] = React.useState(false);
   const [selectedAddress, setSelectedAddress] = React.useState<Address | null>(null);
   const [showAddressModal, setShowAddressModal] = React.useState(false);
-  // CEO chốt 31/10: ưu tiên thanh toán trước (PayOS); tiền mặt vẫn chọn được, KTV phải có số dư bảo đảm phí.
+  // CEO chốt 31/10: ưu tiên thanh toán trước; 21/11 đổi PayOS → chuyển khoản QR (SePay).
+  // Tiền mặt vẫn chọn được, KTV phải có số dư bảo đảm phí.
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<number>(
-    PaymentMethod.PayOS
+    PaymentMethod.SePay
   );
+  const [sepayUrl, setSepayUrl] = React.useState<string | null>(null);
   const [showPaymentModal, setShowPaymentModal] = React.useState(false);
   const [showPayOSWebView, setShowPayOSWebView] = React.useState(false);
   const [payosUrl, setPayosUrl] = React.useState('');
@@ -382,7 +385,9 @@ export default function BookingCheckoutScreen() {
         router.replace(targetUrl);
       } else if (data.type === 'online') {
         if (data.paymentUrl) {
-          if (selectedPaymentMethod === PaymentMethod.Vnpay) {
+          if (isSePayUrl(data.paymentUrl)) {
+            setSepayUrl(data.paymentUrl);
+          } else if (selectedPaymentMethod === PaymentMethod.Vnpay) {
             // VNPay: Open in-app WebView
             setVnpayUrl(data.paymentUrl);
             setShowVnpayWebView(true);
@@ -477,6 +482,7 @@ export default function BookingCheckoutScreen() {
       case PaymentMethod.Vnpay:
       case PaymentMethod.Momo:
       case PaymentMethod.PayOS:
+      case PaymentMethod.SePay:
         return 'qr-code-scanner';
       case PaymentMethod.Card:
         return 'credit-card';
@@ -488,6 +494,27 @@ export default function BookingCheckoutScreen() {
 
   return (
     <View style={styles.screen}>
+      {/* Chuyển khoản QR (SePay) */}
+      <SePayQrModal
+        visible={!!sepayUrl}
+        paymentUrl={sepayUrl}
+        checkPaid={async () =>
+          !!confirmedBookingId && (await waitForBookingPaid(confirmedBookingId, 1, 0)) === 'paid'
+        }
+        onPaid={() => {
+          setSepayUrl(null);
+          Alert.alert('Thanh toán thành công! 🎉', 'TAYZEN đã nhận tiền chuyển khoản cho đơn của bạn.');
+          if (confirmedBookingId) router.replace(`/booking-detail?bookingId=${confirmedBookingId}` as any);
+        }}
+        onClose={() => {
+          setSepayUrl(null);
+          Alert.alert(
+            'Chưa nhận được tiền',
+            'Nếu bạn đã chuyển khoản, đơn sẽ tự cập nhật khi ngân hàng báo về. Bạn có thể mở lại mã QR trong chi tiết đơn.'
+          );
+          if (confirmedBookingId) router.replace(`/booking-detail?bookingId=${confirmedBookingId}` as any);
+        }}
+      />
       {/* PayOS WebView Modal */}
       <PayOSWebView
         visible={showPayOSWebView}

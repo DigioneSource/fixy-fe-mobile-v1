@@ -19,6 +19,7 @@ import { SvgCssUri } from 'react-native-svg/css';
 import { HubConnectionBuilder, LogLevel, HubConnection } from '@microsoft/signalr';
 
 import { startInAppCall } from '@/features/contact/in-app-contact';
+import { SePayQrModal, isSePayUrl } from '@/components/payment/sepay-qr-modal';
 import VNPayWebView from '@/components/VNPayWebView';
 import { SosButton } from '@/components/safety/sos-button';
 import { CANCELLATION_POLICY, FEATURE_CANCELLATION_FEES } from '@/features/safety/safety-config';
@@ -34,6 +35,7 @@ import {
   PAYMENT_METHOD_LABELS,
   payBookingWithWallet,
   startBookingPayment,
+  waitForBookingPaid,
   WalletOverview,
   respondBookingProposal,
   cancelBooking,
@@ -299,10 +301,11 @@ export default function BookingDetailScreen() {
   });
 
   // Local UI States
-  // Mặc định VNPay; ví chỉ dùng khi còn số dư cũ (không nhận nạp mới).
+  // Mặc định chuyển khoản QR (SePay, 21/11); ví chỉ dùng khi còn số dư cũ (không nhận nạp mới).
   const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<PaymentMethod>(
-    PaymentMethod.Vnpay
+    PaymentMethod.SePay
   );
+  const [sepayUrl, setSepayUrl] = React.useState<string | null>(null);
   const [voucherCode, setVoucherCode] = React.useState('');
   const [selectedVoucher, setSelectedVoucher] = React.useState<EligibleVoucher | null>(null);
   const [voucherError, setVoucherError] = React.useState('');
@@ -416,7 +419,7 @@ export default function BookingDetailScreen() {
         const finalTotalAmount = Math.max(0, totalAmount - getVoucherDiscount(selectedVoucher));
 
         if (wallet && wallet.balance < finalTotalAmount) {
-          throw new Error('Ví không đủ số dư. Vui lòng nạp thêm tiền hoặc chọn thanh toán VNPay.');
+          throw new Error('Ví không đủ số dư. Vui lòng chọn chuyển khoản QR.');
         }
 
         await payBookingWithWallet(booking.id);
@@ -425,6 +428,10 @@ export default function BookingDetailScreen() {
         const paymentUrl = payment.paymentUrl ?? payment.redirectUrl;
         if (!paymentUrl) throw new Error('Không nhận được liên kết thanh toán.');
 
+        if (isSePayUrl(paymentUrl)) {
+          setSepayUrl(paymentUrl);
+          return 'sepay';
+        }
         setVnpayPaymentUrl(paymentUrl);
         setShowVnpayWebView(true);
         return 'vnpay';
@@ -965,7 +972,7 @@ export default function BookingDetailScreen() {
                       },
                     ]
                   : []),
-                { value: PaymentMethod.Vnpay, label: 'VNPay' },
+                { value: PaymentMethod.SePay, label: 'Chuyển khoản QR' },
               ].map((option) => {
                 const active = selectedPaymentMethod === option.value;
                 return (
@@ -1155,8 +1162,23 @@ export default function BookingDetailScreen() {
         </Pressable>
       </Modal>
 
+      <SePayQrModal
+        visible={!!sepayUrl}
+        paymentUrl={sepayUrl}
+        checkPaid={async () => !!bookingId && (await waitForBookingPaid(bookingId, 1, 0)) === 'paid'}
+        onPaid={() => {
+          setSepayUrl(null);
+          queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+          Alert.alert('Thanh toán thành công! 🎉', 'TAYZEN đã nhận tiền chuyển khoản cho đơn của bạn.');
+        }}
+        onClose={() => {
+          setSepayUrl(null);
+          queryClient.invalidateQueries({ queryKey: ['booking', bookingId] });
+        }}
+      />
+
       {vnpayPaymentUrl && (
-        <VNPayWebView
+      <VNPayWebView
           visible={showVnpayWebView}
           paymentUrl={vnpayPaymentUrl}
           onClose={() => {
