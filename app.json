@@ -64,7 +64,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "vn.tayzen.app",
       "config": {
         "usesNonExemptEncryption": false
