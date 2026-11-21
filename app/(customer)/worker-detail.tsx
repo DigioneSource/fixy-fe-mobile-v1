@@ -363,7 +363,9 @@ export default function WorkerDetailScreen() {
 
   const ktvName = worker?.fullName || 'Kỹ thuật viên';
   const ktvAvatar = worker?.avatarUrl;
-  const ktvRating = typeof worker?.rating === 'number' && worker.rating > 0 ? worker.rating.toFixed(1) : '5.0';
+  // Chưa có đánh giá thì KHÔNG hiện điểm giả 5.0 (Apple/Google coi là đánh giá sai sự thật).
+  const hasReviews = totalReviewsCount > 0 && typeof worker?.rating === 'number' && worker.rating > 0;
+  const ktvRating = hasReviews ? (worker!.rating as number).toFixed(1) : '';
   const badge = BADGE_CONFIG[worker?.badge ?? 0] || BADGE_CONFIG[2];
 
   const handleBookNow = (selectedCategoryId?: string, durationMinutes?: number) => {
@@ -417,9 +419,15 @@ export default function WorkerDetailScreen() {
               {worker?.distance || worker?.city || worker?.address?.city || selectedCity || 'Không xác định'}
             </Text>
             <Text style={styles.dotDivider}>|</Text>
-            <MaterialIcons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.ratingScore}>{ktvRating}</Text>
-            <Text style={styles.reviewsCount}>({totalReviewsCount} đánh giá)</Text>
+            {hasReviews ? (
+              <>
+                <MaterialIcons name="star" size={16} color="#F59E0B" />
+                <Text style={styles.ratingScore}>{ktvRating}</Text>
+                <Text style={styles.reviewsCount}>({totalReviewsCount} đánh giá)</Text>
+              </>
+            ) : (
+              <Text style={styles.reviewsCount}>Chưa có đánh giá</Text>
+            )}
           </View>
 
           {/* TAYZEN Trust Box */}
@@ -549,7 +557,8 @@ export default function WorkerDetailScreen() {
             </View>
           </View>
 
-          {/* Rating Breakdown Section */}
+          {/* Rating Breakdown Section — chỉ hiện khi đã có đánh giá thật */}
+          {hasReviews ? (
           <View style={styles.ratingSection}>
             <View style={styles.ratingSummaryCard}>
               <View style={styles.leftScoreBox}>
@@ -625,6 +634,7 @@ export default function WorkerDetailScreen() {
               )}
             </View>
           </View>
+          ) : null}
         </View>
       </ScrollView>
 

@@ -187,7 +187,7 @@ export default function HomeScreen() {
         City: selectedCity,
         CustomerLat: userLocation?.lat,
         CustomerLng: userLocation?.lng,
-        MinRating: 4.0,
+        // 21/11: bỏ MinRating 4.0 — sàn mới chưa KTV nào có đánh giá nên mục này luôn trống.
         PageSize: 20,
       }),
   });

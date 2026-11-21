@@ -233,9 +233,15 @@ export default function ServiceWorkersScreen() {
           <Text style={styles.ktvName} numberOfLines={1}>{item.fullName}</Text>
 
           <View style={styles.ratingDistanceRow}>
-            <MaterialIcons name="star" size={16} color="#F59E0B" />
-            <Text style={styles.ratingText}>{item.rating > 0 ? item.rating.toFixed(1) : '5.0'}</Text>
-            <Text style={styles.reviewsText}>({item.reviewsCount} đánh giá)</Text>
+            {item.rating > 0 && item.reviewsCount > 0 ? (
+              <>
+                <MaterialIcons name="star" size={16} color="#F59E0B" />
+                <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+                <Text style={styles.reviewsText}>({item.reviewsCount} đánh giá)</Text>
+              </>
+            ) : (
+              <Text style={styles.reviewsText}>KTV mới · chưa có đánh giá</Text>
+            )}
           </View>
 
           <View style={styles.locationRow}>
