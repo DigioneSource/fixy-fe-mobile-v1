@@ -63,3 +63,9 @@ Luật sư duyệt điều khoản/HĐ KTV; điền 33 chỗ `[__]` trong Quy ch
 Phí huỷ đơn tiền mặt chỉ ghi số phải thu; hoàn tiền về ví khách (chưa về nguồn); chưa lọc SĐT trong chat phía máy chủ; `propose` giá chưa lưu; chưa có API OCR CCCD (`identity-recognition`).
 
 Báo cáo bàn giao: `~/Git/ERP-DIGIFNB/_DRIVE_QUANTRI/00_BAN_GIAO/2026-10-31_*TAYZEN*`.
+
+## 21/11 đêm — Google Play: khai báo Nội dung ứng dụng
+- ĐÃ XONG: chính phủ (Không), tài chính (không có), sức khoẻ (Thư giãn/giảm căng thẳng), tư cách người bán (giữ theo tài khoản DIGI FNB + ĐKDV https://tayzen.vn/dieu-khoan), mã quảng cáo (Không), xếp hạng nội dung.
+- An toàn dữ liệu: nhập CSV (`scratchpad/tayzen-data-safety.csv`), LƯU NHÁP — nút Lưu chỉ mở sau khi xong "Đối tượng mục tiêu". Khai: thu thập, KHÔNG chia sẻ, mã hoá khi truyền, xoá tài khoản qua tayzen.vn/xoa-tai-khoan, tạo tài khoản = tên người dùng + mật khẩu + xác thực khác (OTP) + OAuth (Google).
+- CHỜ CEO: Thông tin đăng nhập → dán mật khẩu demo (~/.tayzen-secrets/tai-khoan-duyet-store.txt) → Thêm → Lưu. Sau đó: Đối tượng mục tiêu (18+) → Lưu An toàn dữ liệu → bản phát hành production từ AAB v3, xuất bản THỦ CÔNG.
+- APK bản 3 (sửa 5.0 giả): https://expo.dev/artifacts/eas/WrYkElAp2d6KIWJPIIrXbMMrMi7hqt9xNEeE4nMp_uk.apk
