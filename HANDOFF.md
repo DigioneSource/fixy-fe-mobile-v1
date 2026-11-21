@@ -33,6 +33,11 @@
 - **Google Play Console** (Chrome mrsangtms, tài khoản DIGI FNB COMPANY LIMITED): app TAYZEN `4972895379482822376`, gói vn.tayzen.app, miễn phí. ✅ 21/11 15:59 bản 1.0.0 (versionCode 2) ĐÃ PHÁT HÀNH kênh thử nghiệm nội bộ, người thử = danh sách 'Thử nghiệm 01' (9 người). Link tham gia: https://play.google.com/apps/internaltest/4700876203618359921 . Tải AAB: CEO kéo thả (file 95MB > giới hạn 10MB của công cụ Chrome; dùng SA ChonDiem cho TAYZEN bị chặn — cần SA riêng nếu muốn tự đẩy).
 - **Goong**: khoá `tayzen-app` (API) + `tayzen-maptiles` trên tài khoản sangtran.dna; lưu ở biến EAS (development/preview/production, sensitive). eas.json đã gắn `environment` cho từng profile — thiếu cái này EAS KHÔNG nạp biến.
 
+## 21/11 tối — đổi PayOS → SePay (chuyển khoản QR)
+- Backend `dcc67ff` (đã deploy): PaymentMethod.SePay=6 "Chuyển khoản QR". Tạo thanh toán → mã nội dung `TZ`+10 số (PaymentOrder.GatewayOrderCode) + link ảnh `qr.sepay.vn/img?...`. Webhook `POST https://api.tayzen.vn/api/payment/webhook/sepay` (header `Authorization: Apikey <SePay__WebhookToken>` — token ĐÃ sinh trong .env VPS): TransferType=in → khớp mã + ĐÚNG số tiền → Paid; out → đối soát chi trả cũ. 56/56 test.
+- App `a4feac5`: `components/payment/sepay-qr-modal.tsx`; checkout/chi tiết đơn mặc định SePay, chỉ còn SePay/Tiền mặt/Ví; KTV nạp số dư qua QR. Thêm expo-clipboard → CẦN BUILD MỚI.
+- **Còn thiếu**: điền `SePay__BankCode/AccountNumber/AccountName` trên VPS (chưa điền → app báo "phương thức tạm chưa dùng được") + tạo webhook trên my.sepay.vn (tài khoản sangtran.dna) trỏ URL trên, kiểu xác thực API Key = token trong .env VPS, chỉ giao dịch tiền vào.
+
 ## Đang chờ CEO
 1. **Issuer ID** App Store Connect (khoá Admin `AuthKey_SMV6S5K9N9.p8`, Team 4AD7CC757B) → build iOS/TestFlight.
 2. Khoá dịch vụ đứng tên DIGI FNB: **SMS OTP** (bắt buộc trước khi mở khách), payOS, SMTP (Oxmail), Firebase (push), Goong, VNPay.
