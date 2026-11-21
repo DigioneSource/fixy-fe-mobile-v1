@@ -44,6 +44,12 @@
 - Pháp nhân đổi sang **HỘ KINH DOANH SANGTQ** (app 50adbe4, web a4d21f4 đã deploy; LEGAL_VERSION 2026-11-21.1). Còn [__]: MST, số/ngày/nơi cấp GCN ĐKHKD, địa chỉ kinh doanh. ✅ CEO 21/11: phí = **30% + GTGT 8% = 32,4%** (backend 029cee5 đã deploy, app 801374e, web; ký quỹ tiền mặt vẫn 40%). CEO: HKD chỉ để TEST, ổn thì chuyển sang công ty DIGI FNB (đổi lại company-info, Quy chế, TK SePay). ⚠️ Còn cần luật sư: nghĩa vụ khấu trừ thuế KTV, HKD có được đứng tên nền tảng TMĐT trung gian; Apple/Google đứng tên DIGI FNB.
 - **Còn thiếu (cũ)**: điền `SePay__BankCode/AccountNumber/AccountName` trên VPS (chưa điền → app báo "phương thức tạm chưa dùng được") + tạo webhook trên my.sepay.vn (tài khoản sangtran.dna) trỏ URL trên, kiểu xác thực API Key = token trong .env VPS, chỉ giao dịch tiền vào.
 
+## 21/11 khuya — chuẩn bị nộp duyệt store (CEO: nộp ngay, phát hành THỦ CÔNG)
+- **App Store** (6837625263): phiên bản 1.0.0 gắn build 11; phụ đề, mô tả, từ khoá, Lifestyle, chính sách bảo mật, 18+, Miễn phí, CHỈ Việt Nam, phát hành THỦ CÔNG, App Privacy 13 loại dữ liệu (Published), review detail (Sang Tran, +84825033838, kinhdoanh@digifnb.com, demo 0900000333 — CEO tự dán mật khẩu). Script API: /tmp/claude-501/asc*.py (khoá SMV6S5K9N9). **Còn thiếu: ảnh chụp màn hình iPhone** → rồi Add for Review.
+- **Tài khoản demo store**: khách 0900000333, mật khẩu ~/.tayzen-secrets/tai-khoan-duyet-store.txt (đã lộ trong chat 21/11 → đổi sau khi duyệt xong).
+- **Google Play**: store listing (icon, ảnh bìa, mô tả) lưu nháp; App content: chính sách quyền riêng tư ✅, quảng cáo=Không ✅, Thông tin đăng nhập (đang chờ CEO dán mật khẩu). Còn: xếp hạng nội dung, đối tượng mục tiêu, an toàn dữ liệu, mã quảng cáo, chính phủ, tài chính, sức khoẻ, người bán; ảnh chụp màn hình; AAB build mới; production release.
+- App a9c1520 (build iOS 11 / APK 0223e054): màn QR nhận Pending = đã trả (sửa lỗi chờ mãi), nút Lưu mã QR (expo-media-library, chặn quyền đọc ảnh). Backend c63bb84: lịch mặc định KTV cả tuần 08–22.
+
 ## Đang chờ CEO
 1. **Issuer ID** App Store Connect (khoá Admin `AuthKey_SMV6S5K9N9.p8`, Team 4AD7CC757B) → build iOS/TestFlight.
 2. Khoá dịch vụ đứng tên DIGI FNB: **SMS OTP** (bắt buộc trước khi mở khách), payOS, SMTP (Oxmail), Firebase (push), Goong, VNPay.
