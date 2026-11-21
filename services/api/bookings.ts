@@ -380,7 +380,10 @@ export async function getBookingDetails(bookingId: string): Promise<Booking> {
 
 export type BookingPaymentCheck = 'paid' | 'pending' | 'cancelled';
 
+// Đơn trả trước luôn tạo ở PendingPayment. Thanh toán xong: đã chọn KTV → Pending (chờ KTV xác nhận),
+// chưa chọn → Matching. Vì vậy Pending ở đây = ĐÃ trả (21/11: thiếu Pending làm màn QR chờ mãi).
 const PAID_BOOKING_STATUSES: number[] = [
+  BookingStatus.Pending,
   BookingStatus.Matching,
   BookingStatus.Confirmed,
   BookingStatus.Traveling,
@@ -400,7 +403,7 @@ export async function waitForBookingPaid(
       const booking = await getBookingDetails(bookingId);
       const status = Number(booking.status);
       if (status === BookingStatus.Cancelled) return 'cancelled';
-      // Chỉ coi là đã trả khi đơn đã qua bước thanh toán; Pending/PendingPayment/trạng thái lạ thì chờ tiếp.
+      // Chỉ coi là đã trả khi đơn đã rời PendingPayment; PendingPayment/trạng thái lạ thì chờ tiếp.
       if (PAID_BOOKING_STATUSES.includes(status)) return 'paid';
     } catch {
       // Lỗi mạng tạm thời: thử lại ở lượt sau

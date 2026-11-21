@@ -1,8 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 import * as React from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -112,6 +115,30 @@ export function SePayQrModal({ visible, paymentUrl, checkPaid, onPaid, onClose, 
     };
   }, [visible, info]);
 
+  const [saving, setSaving] = React.useState(false);
+  const saveQr = async () => {
+    if (!info || saving) return;
+    setSaving(true);
+    try {
+      const perm = await MediaLibrary.requestPermissionsAsync(true);
+      if (!perm.granted) {
+        Alert.alert('Chưa có quyền lưu ảnh', 'Vui lòng cho phép TAYZEN lưu ảnh vào thư viện, hoặc chụp màn hình mã QR.');
+        return;
+      }
+      const target = `${FileSystem.cacheDirectory}tayzen-qr-${info.content.replace(/\W+/g, '-')}.png`;
+      const { uri } = await FileSystem.downloadAsync(info.qrUrl, target);
+      await MediaLibrary.saveToLibraryAsync(uri);
+      Alert.alert(
+        'Đã lưu mã QR',
+        'Mở app ngân hàng → Quét QR → chọn ảnh từ thư viện. Giữ nguyên số tiền và nội dung chuyển khoản.'
+      );
+    } catch {
+      Alert.alert('Không lưu được ảnh', 'Bạn có thể chụp màn hình mã QR thay thế.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const copy = async (label: string, value: string) => {
     await Clipboard.setStringAsync(value);
     setCopied(label);
@@ -144,7 +171,7 @@ export function SePayQrModal({ visible, paymentUrl, checkPaid, onPaid, onClose, 
         </View>
         <ScrollView contentContainerStyle={styles.body}>
           <Text style={styles.hint}>
-            Mở app ngân hàng, quét mã QR dưới đây (hoặc chụp màn hình rồi chọn ảnh). Giữ nguyên số
+            Mở app ngân hàng và quét mã QR dưới đây. Thanh toán trên chính điện thoại này: bấm “Lưu mã QR vào ảnh” rồi chọn ảnh trong app ngân hàng. Giữ nguyên số
             tiền và nội dung để TAYZEN tự xác nhận.
           </Text>
           <View style={styles.qrBox}>
@@ -155,6 +182,20 @@ export function SePayQrModal({ visible, paymentUrl, checkPaid, onPaid, onClose, 
               accessibilityLabel="Mã QR chuyển khoản"
             />
           </View>
+          <Pressable
+            style={[styles.saveBtn, saving && { opacity: 0.6 }]}
+            onPress={saveQr}
+            disabled={saving}
+            accessibilityLabel="Lưu mã QR vào thư viện ảnh">
+            {saving ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <>
+                <MaterialIcons name="download" size={20} color="#FFFFFF" />
+                <Text style={styles.saveText}>Lưu mã QR vào ảnh</Text>
+              </>
+            )}
+          </Pressable>
           <View style={styles.card}>
             {rows.map((row) => (
               <View key={row.label} style={styles.row}>
@@ -221,6 +262,16 @@ const styles = StyleSheet.create({
     borderColor: '#E1E7E2',
   },
   qr: { width: 260, height: 260 },
+  saveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#0F382C',
+  },
+  saveText: { color: '#FFFFFF', fontFamily: 'Montserrat_700Bold', fontSize: 15 },
   card: {
     borderRadius: 16,
     backgroundColor: '#FFFFFF',

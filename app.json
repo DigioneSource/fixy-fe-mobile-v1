@@ -38,7 +38,15 @@
           "microphonePermission": false
         }
       ],
-      "@maplibre/maplibre-react-native"
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "TAYZEN cần quyền truy cập ảnh để lưu mã QR thanh toán.",
+          "savePhotosPermission": "TAYZEN lưu mã QR thanh toán vào thư viện ảnh để bạn quét bằng app ngân hàng.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -69,6 +77,11 @@
       },
       "package": "vn.tayzen.app",
       "blockedPermissions": [
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
         "android.permission.RECORD_AUDIO"
       ],
       "googleServicesFile": "./google-services.json"
