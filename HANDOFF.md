@@ -8,7 +8,7 @@
 | VPS | Vnode **AMD MAX 03** (4 vCPU / 6 GB / 70 GB NVMe, Ubuntu 24.04), IP **163.128.43.11**, SSH cổng **8686**, hết hạn 21/11/2027 | User `deploy` + khoá `~/.ssh/tayzen_vps`. Root + mật khẩu SSH ĐÃ TẮT. ufw chỉ mở 8686, fail2ban, tự cập nhật bản vá, swap 4 GB. |
 | Website | `~/Git/tayzen-web` → Cloudflare Pages `tayzen` | tayzen.vn + www chạy. |
 | Tunnel API | Cloudflare Tunnel `tayzen-api` (a0a95a95-…) | ✅ cloudflared chạy trong compose, api.tayzen.vn → api:8080. |
-| EAS | `@digifnb/tayzen` | 21/11: build Android preview (APK) đầu tiên. iOS chờ Issuer ID. Keystore Android do EAS giữ. |
+| EAS | `@digifnb/tayzen` | ✅ 21/11: APK preview đầu tiên XONG (build 120385ec, sau khi sửa patch expo 54.0.38 — ec6248a). iOS chờ Issuer ID. Keystore Android do EAS giữ. |
 
 ## Vận hành VPS
 - Vào máy: `ssh -i ~/.ssh/tayzen_vps -p 8686 deploy@163.128.43.11` → `cd /opt/tayzen/TAYZEN-API`.
