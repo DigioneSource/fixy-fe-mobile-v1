@@ -1,7 +1,7 @@
 // Nội dung pháp lý hiển thị khi đăng ký và khi đặt đơn.
 // Bản nháp nội bộ — cần luật sư rà soát trước khi phát hành chính thức.
 
-export const LEGAL_VERSION = '2026-10-31.3';
+export const LEGAL_VERSION = '2026-11-21.1';
 
 export const LAW_VIOLATION_NOTICE = 'Nghiêm cấm mọi hành vi vi phạm pháp luật';
 
@@ -49,7 +49,7 @@ export const REGISTRATION_TERMS: LegalSection[] = [
   {
     title: '3a. Thu hộ, phí dịch vụ nền tảng và số dư bảo đảm',
     items: [
-      'Khi Khách hàng thanh toán qua ứng dụng (PayOS, VNPay hoặc phương thức khác do tổ chức được cấp phép cung ứng), TAYZEN nhận khoản tiền đó với tư cách bên thu hộ cho KTV theo uỷ quyền của KTV. Tiền dịch vụ là doanh thu của KTV, không phải doanh thu của TAYZEN.',
+      'Khi Khách hàng thanh toán qua ứng dụng (chuyển khoản ngân hàng bằng mã VietQR vào tài khoản của TAYZEN), TAYZEN nhận khoản tiền đó với tư cách bên thu hộ cho KTV theo uỷ quyền của KTV. Tiền dịch vụ là doanh thu của KTV, không phải doanh thu của TAYZEN.',
       'TAYZEN chuyển tiền thu hộ cho KTV sau khi đơn hoàn thành và hết thời hạn khiếu nại 24 giờ (hoặc khi Khách hàng xác nhận hoàn thành), sau khi trừ phí dịch vụ nền tảng và khoản thuế TAYZEN khấu trừ, nộp thay theo luật.',
       'Phí dịch vụ nền tảng là tiền KTV trả cho TAYZEN để dùng hạ tầng kết nối, thanh toán và hỗ trợ: 30% giá dịch vụ chưa gồm thuế GTGT (33% đã gồm thuế), tính trên giá KTV niêm yết hoặc đã báo. TAYZEN báo trước ít nhất 15 ngày khi đổi mức phí.',
       'Với đơn Khách hàng trả tiền mặt trực tiếp cho KTV, tại thời điểm nhận đơn KTV phải có số dư bảo đảm tối thiểu bằng phí dịch vụ nền tảng (đã gồm thuế) cộng khoản thuế TAYZEN khấu trừ, nộp thay của chính đơn đó, hiện bằng 40% giá đơn. Khoản này chỉ dùng để thanh toán phí và thuế của đơn đó; phần chưa dùng thuộc về KTV và được rút bất kỳ lúc nào.',
@@ -115,7 +115,7 @@ export const PRIVACY_POLICY: LegalSection[] = [
     title: '3. Bên nhận dữ liệu',
     items: [
       'Dữ liệu được lưu trên máy chủ của TAYZEN đặt tại Việt Nam; việc so khớp khuôn mặt với CCCD chạy ngay trên máy chủ này, không gửi cho bên thứ ba.',
-      'Cổng thanh toán PayOS, VNPay: xử lý giao dịch thanh toán.',
+      'SePay (dịch vụ kết nối dữ liệu giao dịch ngân hàng): nhận thông báo tiền về tài khoản của TAYZEN để tự động xác nhận thanh toán; SePay chỉ nhận số tiền và nội dung chuyển khoản, không nhận thông tin đăng nhập ngân hàng của bạn.',
       'Cơ quan nhà nước có thẩm quyền khi pháp luật yêu cầu.',
       'TAYZEN không bán dữ liệu cá nhân của bạn cho bất kỳ ai.',
     ],

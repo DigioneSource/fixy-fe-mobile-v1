@@ -19,8 +19,14 @@ export default function LegalInfoScreen() {
   const rows: { label: string; value: string }[] = [
     { label: 'Chủ sở hữu nền tảng', value: COMPANY_INFO.companyName },
     { label: 'Mã số thuế', value: COMPANY_INFO.taxCode },
-    { label: 'Địa chỉ trụ sở', value: COMPANY_INFO.address },
-    { label: 'Người đại diện', value: COMPANY_INFO.representative },
+    {
+      label: COMPANY_INFO.entityType === 'household' ? 'Địa chỉ kinh doanh' : 'Địa chỉ trụ sở',
+      value: COMPANY_INFO.address,
+    },
+    {
+      label: COMPANY_INFO.entityType === 'household' ? 'Chủ hộ kinh doanh' : 'Người đại diện',
+      value: COMPANY_INFO.representative,
+    },
     { label: 'Email hỗ trợ', value: COMPANY_INFO.supportEmail },
     { label: 'Đăng ký với Bộ Công Thương', value: COMPANY_INFO.moitRegistrationNumber },
   ];
