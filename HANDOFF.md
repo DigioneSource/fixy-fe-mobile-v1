@@ -28,6 +28,11 @@
 - **Ảnh danh mục**: 6 biểu tượng Material Symbols màu TAYZEN, nguồn ở Drive `00_BAN_GIAO/2026-11-21_ANH_DANH_MUC_TAYZEN/`, đã tải lên API.
 - **Goong**: bản APK chưa có `GOONG_API_KEY`/`GOONG_MAPTILES_API_KEY` (eas.json không đặt) → bản đồ/tìm địa chỉ chưa chạy. Tài khoản Goong = sangtran.dna (cần đăng nhập để tạo khoá riêng TAYZEN).
 
+## 21/11 tối — store
+- **App Store Connect**: app TAYZEN `6837625263` (SKU tayzen-ios-001, tiếng Việt). Build iOS 1.0.0 (9) có Goong ĐÃ NỘP lên TestFlight (submission 3abee68c). `eas submit` cần ascApiKeyPath/Id/IssuerId trong eas.json → thêm TẠM khi nộp, không commit (đường dẫn máy Mac).
+- **Google Play Console** (Chrome mrsangtms, tài khoản DIGI FNB COMPANY LIMITED): app TAYZEN `4972895379482822376`, gói vn.tayzen.app, miễn phí. Lần đầu phải tải AAB bằng tay (thử nghiệm nội bộ).
+- **Goong**: khoá `tayzen-app` (API) + `tayzen-maptiles` trên tài khoản sangtran.dna; lưu ở biến EAS (development/preview/production, sensitive). eas.json đã gắn `environment` cho từng profile — thiếu cái này EAS KHÔNG nạp biến.
+
 ## Đang chờ CEO
 1. **Issuer ID** App Store Connect (khoá Admin `AuthKey_SMV6S5K9N9.p8`, Team 4AD7CC757B) → build iOS/TestFlight.
 2. Khoá dịch vụ đứng tên DIGI FNB: **SMS OTP** (bắt buộc trước khi mở khách), payOS, SMTP (Oxmail), Firebase (push), Goong, VNPay.
