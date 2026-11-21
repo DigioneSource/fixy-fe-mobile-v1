@@ -36,6 +36,7 @@
 ## 21/11 tối — đổi PayOS → SePay (chuyển khoản QR)
 - Backend `dcc67ff` (đã deploy): PaymentMethod.SePay=6 "Chuyển khoản QR". Tạo thanh toán → mã nội dung `TZ`+10 số (PaymentOrder.GatewayOrderCode) + link ảnh `qr.sepay.vn/img?...`. Webhook `POST https://api.tayzen.vn/api/payment/webhook/sepay` (header `Authorization: Apikey <SePay__WebhookToken>` — token ĐÃ sinh trong .env VPS): TransferType=in → khớp mã + ĐÚNG số tiền → Paid; out → đối soát chi trả cũ. 56/56 test.
 - App `a4feac5`: `components/payment/sepay-qr-modal.tsx`; checkout/chi tiết đơn mặc định SePay, chỉ còn SePay/Tiền mặt/Ví; KTV nạp số dư qua QR. Thêm expo-clipboard → CẦN BUILD MỚI.
+- CEO chốt 21/11: tiền về **tài khoản HKD SangTQ** (hộ kinh doanh, không phải TK công ty DIGI FNB).
 - **Còn thiếu**: điền `SePay__BankCode/AccountNumber/AccountName` trên VPS (chưa điền → app báo "phương thức tạm chưa dùng được") + tạo webhook trên my.sepay.vn (tài khoản sangtran.dna) trỏ URL trên, kiểu xác thực API Key = token trong .env VPS, chỉ giao dịch tiền vào.
 
 ## Đang chờ CEO
