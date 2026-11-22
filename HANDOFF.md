@@ -69,3 +69,11 @@ Báo cáo bàn giao: `~/Git/ERP-DIGIFNB/_DRIVE_QUANTRI/00_BAN_GIAO/2026-10-31_*T
 - An toàn dữ liệu: nhập CSV (`scratchpad/tayzen-data-safety.csv`), LƯU NHÁP — nút Lưu chỉ mở sau khi xong "Đối tượng mục tiêu". Khai: thu thập, KHÔNG chia sẻ, mã hoá khi truyền, xoá tài khoản qua tayzen.vn/xoa-tai-khoan, tạo tài khoản = tên người dùng + mật khẩu + xác thực khác (OTP) + OAuth (Google).
 - CHỜ CEO: Thông tin đăng nhập → dán mật khẩu demo (~/.tayzen-secrets/tai-khoan-duyet-store.txt) → Thêm → Lưu. Sau đó: Đối tượng mục tiêu (18+) → Lưu An toàn dữ liệu → bản phát hành production từ AAB v3, xuất bản THỦ CÔNG.
 - APK bản 3 (sửa 5.0 giả): https://expo.dev/artifacts/eas/WrYkElAp2d6KIWJPIIrXbMMrMi7hqt9xNEeE4nMp_uk.apk
+
+## 22/11 — Play production: lỗi 16 KB + hoàn tất store
+- Play CHẶN AAB v3: "không hỗ trợ trang bộ nhớ 16 KB". Thủ phạm `libmapbox-gl.so` (MapLibre RN 10.0.0-alpha.5 → Android SDK 10.2.0, căn 4 KB).
+  → Nâng `@maplibre/maplibre-react-native` lên 10.4.2 (Android SDK 11.12.1). Patch podspec làm lại: post_install no-op + `s.dependency 'MapLibre', $MLRN_NATIVE_VERSION` (6.17.1, có trên CocoaPods). location-setup: module `MLRNModule`, prop `mapStyle`. ⚠️ Bản iOS kế tiếp cần build thử (iOS 13 đang duyệt vẫn dùng bản cũ).
+  → Kiểm 16 KB: giải nén AAB, đọc p_align của PT_LOAD mọi .so 64-bit ≥ 0x4000.
+- Bỏ điểm giả 5.0/4.8 ở home, checkout, hồ sơ KTV (commit 1e802d4).
+- Store: trang thông tin chính đã "Sẵn sàng gửi"; danh mục Làm đẹp; liên hệ kinhdoanh@digifnb.com + https://tayzen.vn; quốc gia production = Việt Nam.
+- Ghi chú phát hành dùng thẻ `<vi>` (không phải vi-VN).
