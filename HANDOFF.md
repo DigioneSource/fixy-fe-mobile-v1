@@ -77,3 +77,6 @@ Báo cáo bàn giao: `~/Git/ERP-DIGIFNB/_DRIVE_QUANTRI/00_BAN_GIAO/2026-10-31_*T
 - Bỏ điểm giả 5.0/4.8 ở home, checkout, hồ sơ KTV (commit 1e802d4).
 - Store: trang thông tin chính đã "Sẵn sàng gửi"; danh mục Làm đẹp; liên hệ kinhdoanh@digifnb.com + https://tayzen.vn; quốc gia production = Việt Nam.
 - Ghi chú phát hành dùng thẻ `<vi>` (không phải vi-VN).
+- ✅ 22/11 sáng: ĐÃ GỬI Google duyệt (11 thay đổi) — production AAB versionCode 5, Việt Nam, 18+, XUẤT BẢN CÓ QUẢN LÝ = BẬT (duyệt xong CEO tự bấm "Xuất bản" ở Tổng quan việc xuất bản). Bỏ qua cảnh báo `android.hardware.screen.portrait` (giới hạn tablet/Desktop/XR).
+- iOS build 13: WAITING_FOR_REVIEW, phát hành thủ công.
+- Trước khi bấm xuất bản 2 store: Zalo duyệt mẫu 671211 → UseMock=false trên VPS; đổi mật khẩu tài khoản demo sau khi được duyệt.
