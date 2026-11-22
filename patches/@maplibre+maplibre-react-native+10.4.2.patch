@@ -1,23 +1,13 @@
 diff --git a/node_modules/@maplibre/maplibre-react-native/maplibre-react-native.podspec b/node_modules/@maplibre/maplibre-react-native/maplibre-react-native.podspec
-index e1880dd..a2cf9e2 100644
+index 4eae50f..8fe7330 100644
 --- a/node_modules/@maplibre/maplibre-react-native/maplibre-react-native.podspec
 +++ b/node_modules/@maplibre/maplibre-react-native/maplibre-react-native.podspec
-@@ -24,40 +24,9 @@ def $RCTMLN._add_spm_to_target(project, target, url, requirement, product_name)
+@@ -35,30 +35,9 @@ def $MLRN._add_spm_to_target(project, target, url, requirement, product_name)
  end
  
- def $RCTMLN.post_install(installer)
--  spm_spec = {
--    url: "https://github.com/maplibre/maplibre-gl-native-distribution",
--    requirement: {
--      kind: "exactVersion",
--      version: "6.4.0"
--    },
--    product_name: "MapLibre"
--  }
+ def $MLRN.post_install(installer)
+-  spm_spec = $MLRN_SPM_SPEC
 -
--  if $RCTMLN_SPM_Spec.is_a?(Hash)
--    spm_spec = $RCTMLN_SPM_Spec
--  end
 -  project = installer.pods_project
 -  self._add_spm_to_target(
 -    project,
@@ -40,17 +30,17 @@ index e1880dd..a2cf9e2 100644
 -      end
 -    end
 -  end
-+  # TAYZEN 21/11/2026: không gắn MapLibre qua SPM vào CẢ target pod lẫn target app
++  # TAYZEN 22/11/2026: không gắn MapLibre qua SPM vào CẢ target pod lẫn target app
 +  # (archive iOS lỗi "MapLibre.xcframework-ios.signature ... already exists").
 +  # MapLibre lấy qua CocoaPods (s.dependency bên dưới) — chỉ nhúng một lần.
  end
  
  Pod::Spec.new do |s|
-@@ -72,6 +41,7 @@ Pod::Spec.new do |s|
+@@ -73,6 +52,7 @@ Pod::Spec.new do |s|
  
    s.dependency 'React-Core'
    s.dependency 'React'
-+  s.dependency 'MapLibre', '6.4.0'
++  s.dependency 'MapLibre', $MLRN_NATIVE_VERSION
  
    s.subspec 'DynamicLibrary' do |sp|
-     sp.source_files	= "ios/RCTMLN/**/*.{h,m}"
+     sp.source_files	= "ios/MLRN/**/*.{h,m}"

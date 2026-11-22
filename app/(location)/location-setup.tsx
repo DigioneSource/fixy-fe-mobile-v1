@@ -89,7 +89,8 @@ console.error = (...args: any[]) => {
 
 // 1. Try loading MapLibre if the native module MLNModule is available
 try {
-  const hasMLNModule = NativeModules && NativeModules.MLNModule != null;
+  const hasMLNModule =
+    NativeModules && (NativeModules.MLRNModule != null || NativeModules.MLNModule != null);
   if (hasMLNModule) {
     MapLibreGL = require('@maplibre/maplibre-react-native').default;
     if (MapLibreGL) {
@@ -627,7 +628,7 @@ export default function LocationSetupScreen() {
       {/* Map Segment */}
       {isMapLibreSupported ? (
         <View style={styles.mapContainer}>
-          <MapLibreGL.MapView styleURL={MAP_STYLE_URL} logoEnabled={false} style={styles.map}>
+          <MapLibreGL.MapView mapStyle={MAP_STYLE_URL} logoEnabled={false} style={styles.map}>
             <MapLibreGL.Camera ref={cameraRef} zoomLevel={11} centerCoordinate={currentCoord} />
 
             {/* Current default marker */}
