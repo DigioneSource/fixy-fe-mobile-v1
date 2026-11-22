@@ -892,7 +892,7 @@ export default function WorkerProfileScreen() {
               <View className="flex-row items-center gap-1">
                 <MaterialIcons name="star" size={18} color="#FFB000" />
                 <Text className="text-base text-gray-800 font-montserrat-bold">
-                  {profile?.rating ? Number(profile.rating).toFixed(1) : '4.8'}
+                  {(profile?.reviewsCount ?? 0) > 0 && profile?.rating ? Number(profile.rating).toFixed(1) : 'Mới'}
                 </Text>
               </View>
               <Text className="text-[11px] text-gray-500 mt-0.5 font-montserrat">

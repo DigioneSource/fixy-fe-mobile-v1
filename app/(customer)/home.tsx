@@ -402,11 +402,15 @@ export default function HomeScreen() {
                     </Text>
 
                     <View style={styles.ratingDistanceRow}>
-                      <MaterialIcons name="star" size={16} color="#F59E0B" />
-                      <Text style={styles.ratingText}>
-                        {item.rating > 0 ? (typeof item.rating === 'number' ? item.rating.toFixed(1) : item.rating) : '--'}
-                      </Text>
-                      <Text style={styles.reviewsText}>({item.reviewsCount ?? 0} đánh giá)</Text>
+                      {(item.reviewsCount ?? 0) > 0 && Number(item.rating) > 0 ? (
+                        <>
+                          <MaterialIcons name="star" size={16} color="#F59E0B" />
+                          <Text style={styles.ratingText}>{Number(item.rating).toFixed(1)}</Text>
+                          <Text style={styles.reviewsText}>({item.reviewsCount} đánh giá)</Text>
+                        </>
+                      ) : (
+                        <Text style={styles.reviewsText}>KTV mới · chưa có đánh giá</Text>
+                      )}
                     </View>
 
                     <View style={styles.locationRow}>

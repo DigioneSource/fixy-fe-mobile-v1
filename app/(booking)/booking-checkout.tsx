@@ -671,11 +671,15 @@ export default function BookingCheckoutScreen() {
               <View style={styles.ktvMiniMeta}>
                 <Text style={styles.ktvMiniName}>{worker.fullName}</Text>
                 <View style={styles.ratingRowSmall}>
-                  <MaterialIcons name="star" size={14} color="#D4AF37" />
-                  <Text style={styles.ratingScoreSmall}>{(worker.rating || 5.0).toFixed(1)}</Text>
-                  <Text style={styles.ratingReviewsMuted}>
-                    ({worker.reviewsCount ?? 0} đánh giá)
-                  </Text>
+                  {(worker.reviewsCount ?? 0) > 0 && Number(worker.rating) > 0 ? (
+                    <>
+                      <MaterialIcons name="star" size={14} color="#D4AF37" />
+                      <Text style={styles.ratingScoreSmall}>{Number(worker.rating).toFixed(1)}</Text>
+                      <Text style={styles.ratingReviewsMuted}>({worker.reviewsCount} đánh giá)</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.ratingReviewsMuted}>KTV mới · chưa có đánh giá</Text>
+                  )}
                 </View>
               </View>
             </View>
